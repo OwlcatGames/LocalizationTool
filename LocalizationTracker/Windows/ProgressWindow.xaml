@@ -1,0 +1,27 @@
+﻿<Window x:Class="LocalizationTracker.Windows.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:Properties="clr-namespace:LocalizationTracker.Properties"
+        xmlns:local="clr-namespace:LocalizationTracker.Windows"
+        mc:Ignorable="d"
+        WindowState="{Binding Export_State, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
+        Height="144" 
+        Width="{Binding Export_Width, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
+        Left="{Binding Export_Left, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
+        Top="{Binding Export_Top, Source={x:Static Properties:Settings.Default}, Mode=TwoWay}"
+        Title="Export Results">
+    <Grid>
+        <ProgressBar x:Name="ProgressBar" Height="20" Margin="16,34,16,0" VerticalAlignment="Top" Background="#FFE6E6E6">
+            <ProgressBar.Foreground>
+                <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                    <GradientStop Color="#FF06B025" Offset="1"/>
+                    <GradientStop Color="#FF09FF35"/>
+                </LinearGradientBrush>
+            </ProgressBar.Foreground>
+        </ProgressBar>
+        <TextBlock x:Name="ProressText" Margin="16,12,16,0" VerticalAlignment="Top" TextWrapping="Wrap" Text="TextBlock"/>
+        <TextBlock x:Name="ReportText" Margin="16,60,16,0" VerticalAlignment="Top" TextWrapping="Wrap" Text="TextBlock"/>
+    </Grid>
+</Window>

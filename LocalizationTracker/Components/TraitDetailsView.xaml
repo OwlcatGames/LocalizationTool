@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="LocalizationTracker.Components.TraitDetailsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LocalizationTracker.Components"
+             xmlns:viewModel="clr-namespace:LocalizationTracker.ViewModel"
+             mc:Ignorable="d" 
+             d:DataContext="{viewModel:TraitDetailsVM}">
+  <StackPanel Orientation="Vertical">
+    <StackPanel Orientation="Horizontal">
+        <TextBlock Width="100">Trait</TextBlock>
+        <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Trait, Mode=OneTime}" />
+        </StackPanel>
+    <StackPanel Orientation="Horizontal">
+      <TextBlock Width="100">Updated</TextBlock>
+      <TextBlock Text="{Binding Path=ModificationDate, StringFormat=dd MMMM yyyy\, HH:mm}" />
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=TextVisibility}">
+        <TextBlock Width="100">Text</TextBlock>
+        <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Text, Mode=OneWay}" TextWrapping="Wrap"  MaxWidth="600"  />
+    </StackPanel>
+   </StackPanel>
+</UserControl>

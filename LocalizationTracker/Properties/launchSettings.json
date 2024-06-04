@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "LocalizationTracker": {
+      "commandName": "Project",
+      "commandLineArgs": "config.json",
+	  "workingDirectory": "d:\\pf2-production-2\\Localization\\"
+    }
+  }
+}

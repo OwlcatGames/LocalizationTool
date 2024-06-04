@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="LocalizationTracker.Components.TargetSelector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:LocalizationTracker.Components"
+             xmlns:windows="clr-namespace:LocalizationTracker.Windows"
+             x:Name="Selector"
+             mc:Ignorable="d">
+    <Grid>
+        <Button Name="ButtonShowPopup" Click="ButtonShowPopup_Click" Height="23" BorderBrush="#FFACACAC" Background="#FFEAEAEA">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="BorderBrush" Value="LightGray"/>
+                </Style>
+            </Button.Style>
+            <Button.Content>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="ButtonText" Text="enGB" VerticalAlignment="Center" HorizontalAlignment="Left" Width="150"/>
+                    <Viewbox Grid.Column="1" Margin="22,7,-5,5" MaxHeight="23" >
+                        <Path Data="M240,296 L0,56 56,0 240,184 424,0 480,56 240,296 z" Fill="DarkSlateGray" HorizontalAlignment="Right" IsManipulationEnabled="True">
+                            <Path.RenderTransform>
+                                <ScaleTransform ScaleX="0.5" ScaleY="0.6"/>
+                            </Path.RenderTransform>
+                        </Path>
+                    </Viewbox>
+                </Grid>
+            </Button.Content>
+        </Button>
+        <Popup Name="PopupTraits" StaysOpen="False" Placement="Bottom" PlacementTarget="{Binding ElementName=ButtonShowPopup}">
+            <Border Background="White" BorderBrush="Black" BorderThickness="1">
+                <ListBox Name="CheckedListBox" SelectionMode="Multiple" Width="70"
+                         ItemsSource="{Binding (local:TargetSelectorEntry.Target)}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Name="TargetCheckBox" IsEnabled="true" IsChecked="{Binding (local:TargetSelectorEntry.Selected)}" MaxWidth="150"
+                                      Checked="ElementSelected"                                      
+                                      Unchecked="ElementSelected"
+                                      Content="{Binding (local:TargetSelectorEntry.Target)}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

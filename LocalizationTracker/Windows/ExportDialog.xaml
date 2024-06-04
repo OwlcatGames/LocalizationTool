@@ -1,0 +1,87 @@
+﻿<Window x:Class="LocalizationTracker.Windows.ExportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LocalizationTracker.Windows"
+        xmlns:components="clr-namespace:LocalizationTracker.Components"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:localizationTracker="clr-namespace:LocalizationTracker;assembly=LocalizationTracker"
+        mc:Ignorable="d"
+        Title="Export for Translation" ResizeMode="NoResize" WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight">
+    <Window.Resources>
+        <ObjectDataProvider MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}"
+                        x:Key="ExportTargetValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="localizationTracker:ExportTarget" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues"
+                        ObjectType="{x:Type sys:Enum}"
+                        x:Key="TagRemovalPolicyValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="localizationTracker:TagRemovalPolicy" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+    <Grid x:Name="MainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="200" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <Label Grid.Column="0" Grid.Row="0" Content="Формат" HorizontalAlignment="Right" />
+        <ComboBox Grid.Column="1" Grid.Row="0" Margin="5,5,5,5" SelectedItem="{Binding ExportTarget, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource ExportTargetValues}}" SelectionChanged="ComboBox_SelectionChanged"  />
+
+        <Label Grid.Column="0" Grid.Row="1" Content="Source" HorizontalAlignment="Right" />
+        <ComboBox Grid.Column="1" Grid.Row="1" Margin="5,5,5,5" SelectedItem="{Binding Source, Mode=TwoWay}" ItemsSource="{Binding SourceValues}" />
+
+        <Label Grid.Column="0" Grid.Row="2" Content="Target" HorizontalAlignment="Right" />
+        <components:TargetSelector Grid.Column="1" Grid.Row="2" x:Name="TargetSelector" Margin="5,5,5,5"  />
+        
+        <Label Grid.Column="0" Grid.Row="3" Content="Add Traits" HorizontalAlignment="Right" />
+        <components:TraitsSelector Grid.Column="1" Height="22" Grid.Row="3" x:Name="TraitsSelector" Margin="5,5,5,5" RenderTransformOrigin="0,0.557" />
+
+        <Label Grid.Column="0" Grid.Row="4" Content="Remove Tags" HorizontalAlignment="Right" />
+        <ComboBox Grid.Column="1" Grid.Row="4" Margin="5,5,5,5" SelectedItem="{Binding RemoveTags, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource TagRemovalPolicyValues}}" />
+
+        <Label Grid.Column="0" Grid.Row="5" Content="Context" HorizontalAlignment="Right" />
+        <CheckBox Grid.Column="1" Grid.Row="5" Margin="5,5,5,5" IsChecked="{Binding ExtraContext, Mode=TwoWay}" />
+        
+        <Label Grid.Column="0" Grid.Row="7" Content="Hierarchy" HorizontalAlignment="Right" />
+        <CheckBox Grid.Column="1" Grid.Row="7" Margin="5,5,5,5" IsChecked="{Binding UseFolderHierarchy, Mode=TwoWay}" />
+
+        <Label Grid.Column="0" Grid.Row="8" Content="Comments" HorizontalAlignment="Right" />
+        <CheckBox Grid.Column="1" Grid.Row="8" Margin="5,5,5,5" IsChecked="{Binding IncludeComment, Mode=TwoWay}" />
+
+        <Label Grid.Column="0" Grid.Row="9" Content="Export to separate files" HorizontalAlignment="Right" />
+        <CheckBox Grid.Column="1" Grid.Row="9" Margin="5,5,5,5" IsChecked="{Binding SeparateFiles, Mode=TwoWay}" />
+
+        <Grid Grid.ColumnSpan="2" Grid.Row="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Button Grid.Column="0" Grid.Row="0" x:Name="OkButton" Content="Ok" Margin="5,5,5,5" HorizontalAlignment="Stretch" Click="ButtonOk_Click" />
+            <Button Grid.Column="1" Grid.Row="0" x:Name="CancelButton" Content="Cancel" Margin="5,5,5,5" HorizontalAlignment="Stretch" Click="ButtonCancel_Click" />
+        </Grid>
+    </Grid>
+</Window>

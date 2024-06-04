@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <DebugType>embedded</DebugType>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+    <!-- https://github.com/dotnet/runtime/issues/65879 -->
+    <!--PublishReadyToRun>true</PublishReadyToRun-->
+    <PublishProfile>FolderProfile</PublishProfile>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="BakingSheet" Version="4.1.2" />
+    <PackageReference Include="BakingSheet.Converters.Google" Version="4.1.2" />
+    <PackageReference Include="DeepL.net" Version="1.7.1" />
+    <PackageReference Include="Diff.Match.Patch" Version="3.0.1" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="2.19.0" />
+    <PackageReference Include="Google.Apis.Drive.v3" Version="1.67.0.3373" />
+    <PackageReference Include="Google.Apis.Sheets.v4" Version="1.67.0.3365" />
+    <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" />
+    <PackageReference Include="System.Text.Json" Version="7.0.1" />
+    <PackageReference Include="WeCantSpell.Hunspell" Version="4.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MultiSelectTreeView\MultiSelectTreeView.csproj" />
+    <ProjectReference Include="..\wpf4gp\wpf4gp.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+</Project>

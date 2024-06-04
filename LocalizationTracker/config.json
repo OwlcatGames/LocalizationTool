@@ -1,0 +1,43 @@
+{
+  "ModdersVersion" : true,
+  "Project": "Localization Tool",
+  "IconPath": "Icon.png",
+  "MultilineSearchIcon": "MultilineSearchIcon.png",
+  "StringsFolder": "",
+  "AssetsFolder": "",
+  "BlueprintsFolder": "",
+  "LocalizationPacksFolder": "LocalizationPacks",
+  "IgnoreMismatchedTags": [ "mf", "name", "n" ],
+  "NeedClosingTags": [ "n", "g", "d", "m" ],
+  "Locales": [ "jaJP", "trTR", "dev" ],
+  "AddAIGeneratedTag": false,
+  "DeepL": {
+    "APIKey": "",
+    "SourceLocaleMap": {
+      "ruRU": "ru",
+      "enGB": "en",
+      "deDE": "de",
+      "frFR": "fr",
+      "esES": "es",
+      "jaJP": "ja",
+      "zhCN": "zh"
+    },
+    "TargetLocaleMap": {
+      "ruRU": "ru",
+      "enGB": "en-GB",
+      "deDE": "de",
+      "frFR": "fr",
+      "esES": "es",
+      "jaJP": "ja",
+      "zhCN": "zh"
+    },
+    "MFTags": [ "mf" ],
+    "GlossaryTags": [ "g", "d" ]
+  },
+  "Glossary": {
+    "GlossaryGSheetId": "",
+    "GlossaryJSONPath": "",
+    "GoogleCredentialPath": ""
+  },
+  "ShowStatusColumn": true
+}
