@@ -7,7 +7,7 @@
   "targets": {
     ".NETCoreApp,Version=v7.0": {},
     ".NETCoreApp,Version=v7.0/win-x64": {
-      "LocalizationTracker/0.0.0.183": {
+      "LocalizationTracker/0.0.0.184": {
         "dependencies": {
           "BakingSheet": "4.1.2",
           "BakingSheet.Converters.Google": "4.1.2",
@@ -19,10 +19,10 @@
           "JetBrains.Annotations": "2022.3.1",
           "Microsoft.NET.ILLink.Analyzers": "7.0.100-1.23211.1",
           "Microsoft.NET.ILLink.Tasks": "7.0.100-1.23211.1",
-          "MultiSelectTreeView": "0.0.0.183",
+          "MultiSelectTreeView": "0.0.0.184",
           "System.Text.Json": "7.0.1",
           "WeCantSpell.Hunspell": "4.0.0",
-          "wpf4gp": "0.0.0.183",
+          "wpf4gp": "0.0.0.184",
           "runtimepack.Microsoft.NETCore.App.Runtime.win-x64": "7.0.15",
           "runtimepack.Microsoft.WindowsDesktop.App.Runtime.win-x64": "7.0.15"
         },
@@ -1251,19 +1251,19 @@
           }
         }
       },
-      "common4gp/0.0.0.183": {
+      "common4gp/0.0.0.184": {
         "runtime": {
           "common4gp.dll": {}
         }
       },
-      "MultiSelectTreeView/0.0.0.183": {
+      "MultiSelectTreeView/0.0.0.184": {
         "runtime": {
           "MultiSelectTreeView.dll": {}
         }
       },
-      "wpf4gp/0.0.0.183": {
+      "wpf4gp/0.0.0.184": {
         "dependencies": {
-          "common4gp": "0.0.0.183"
+          "common4gp": "0.0.0.184"
         },
         "runtime": {
           "wpf4gp.dll": {}
@@ -1272,7 +1272,7 @@
     }
   },
   "libraries": {
-    "LocalizationTracker/0.0.0.183": {
+    "LocalizationTracker/0.0.0.184": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1504,17 +1504,17 @@
       "path": "wecantspell.hunspell/4.0.0",
       "hashPath": "wecantspell.hunspell.4.0.0.nupkg.sha512"
     },
-    "common4gp/0.0.0.183": {
+    "common4gp/0.0.0.184": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "MultiSelectTreeView/0.0.0.183": {
+    "MultiSelectTreeView/0.0.0.184": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "wpf4gp/0.0.0.183": {
+    "wpf4gp/0.0.0.184": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
