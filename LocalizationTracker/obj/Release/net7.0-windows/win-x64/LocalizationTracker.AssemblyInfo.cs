@@ -12,11 +12,11 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("LocalizationTracker")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("0.0.0.20")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.0.20+25acc4ed23a779aa53f8035d48ff694d5a73b2ea")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("0.0.0.181")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.0.181+25acc4ed23a779aa53f8035d48ff694d5a73b2ea")]
 [assembly: System.Reflection.AssemblyProductAttribute("LocalizationTracker")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LocalizationTracker")]
-[assembly: System.Reflection.AssemblyVersionAttribute("0.0.0.20")]
+[assembly: System.Reflection.AssemblyVersionAttribute("0.0.0.181")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
 

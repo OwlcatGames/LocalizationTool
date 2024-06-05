@@ -512,7 +512,7 @@
           }
         }
       },
-      "common4gp/0.0.0.20": {
+      "common4gp/0.0.0.181": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v7.0",
         "compile": {
@@ -522,7 +522,7 @@
           "bin/placeholder/common4gp.dll": {}
         }
       },
-      "MultiSelectTreeView/0.0.0.20": {
+      "MultiSelectTreeView/0.0.0.181": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v7.0",
         "compile": {
@@ -535,11 +535,11 @@
           "Microsoft.WindowsDesktop.App"
         ]
       },
-      "wpf4gp/0.0.0.20": {
+      "wpf4gp/0.0.0.181": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v7.0",
         "dependencies": {
-          "common4gp": "0.0.0.20"
+          "common4gp": "0.0.0.181"
         },
         "compile": {
           "bin/placeholder/wpf4gp.dll": {}
@@ -1051,7 +1051,7 @@
           }
         }
       },
-      "common4gp/0.0.0.20": {
+      "common4gp/0.0.0.181": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v7.0",
         "compile": {
@@ -1061,7 +1061,7 @@
           "bin/placeholder/common4gp.dll": {}
         }
       },
-      "MultiSelectTreeView/0.0.0.20": {
+      "MultiSelectTreeView/0.0.0.181": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v7.0",
         "compile": {
@@ -1074,11 +1074,11 @@
           "Microsoft.WindowsDesktop.App"
         ]
       },
-      "wpf4gp/0.0.0.20": {
+      "wpf4gp/0.0.0.181": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v7.0",
         "dependencies": {
-          "common4gp": "0.0.0.20"
+          "common4gp": "0.0.0.181"
         },
         "compile": {
           "bin/placeholder/wpf4gp.dll": {}
@@ -1803,17 +1803,17 @@
         "wecantspell.hunspell.nuspec"
       ]
     },
-    "common4gp/0.0.0.20": {
+    "common4gp/0.0.0.181": {
       "type": "project",
       "path": "../common4gp/common4gp.csproj",
       "msbuildProject": "../common4gp/common4gp.csproj"
     },
-    "MultiSelectTreeView/0.0.0.20": {
+    "MultiSelectTreeView/0.0.0.181": {
       "type": "project",
       "path": "../MultiSelectTreeView/MultiSelectTreeView.csproj",
       "msbuildProject": "../MultiSelectTreeView/MultiSelectTreeView.csproj"
     },
-    "wpf4gp/0.0.0.20": {
+    "wpf4gp/0.0.0.181": {
       "type": "project",
       "path": "../wpf4gp/wpf4gp.csproj",
       "msbuildProject": "../wpf4gp/wpf4gp.csproj"
@@ -1831,17 +1831,17 @@
       "JetBrains.Annotations >= 2022.3.1",
       "Microsoft.NET.ILLink.Analyzers >= 7.0.100-1.23211.1",
       "Microsoft.NET.ILLink.Tasks >= 7.0.100-1.23211.1",
-      "MultiSelectTreeView >= 0.0.0.20",
+      "MultiSelectTreeView >= 0.0.0.181",
       "System.Text.Json >= 7.0.1",
       "WeCantSpell.Hunspell >= 4.0.0",
-      "wpf4gp >= 0.0.0.20"
+      "wpf4gp >= 0.0.0.181"
     ]
   },
   "packageFolders": {
     "C:\\Users\\buildagent\\.nuget\\packages\\": {}
   },
   "project": {
-    "version": "0.0.0.20",
+    "version": "0.0.0.181",
     "restore": {
       "projectUniqueName": "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\LocalizationTracker\\LocalizationTracker.csproj",
       "projectName": "LocalizationTracker",
