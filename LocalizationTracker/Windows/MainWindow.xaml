@@ -87,7 +87,7 @@
                 <MenuItem Header="Strings">
                     <MenuItem Header="Rescan Strings"/>
                     <MenuItem Header="Import"/>
-                    <MenuItem Header="Update Glossary"/>
+                    <MenuItem Header="Update Glossary" Visibility="{Binding ShowOnNonModdersOnly}"/>
                 </MenuItem>
                 <MenuItem Header="View">
                     <MenuItem Header="Filter Color"/>
@@ -99,7 +99,7 @@
                     <MenuItem Header="Locale List"/>
                     <MenuItem Header="Columns"/>
                 </MenuItem>
-                <MenuItem Header="Help">
+                <MenuItem Header="Help" Visibility="{Binding ShowOnNonModdersOnly}">
                     <MenuItem Header="Team">
                         <TextBlock>
                     <Hyperlink NavigateUri="https://confluence.owlcat.local/display/OG/Localization+Tool+Summary" RequestNavigate="Hyperlink_RequestNavigate">

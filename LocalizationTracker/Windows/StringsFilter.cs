@@ -22,13 +22,14 @@ using LocalizationTracker.Tools;
 using LocalizationTracker.Tools.GlossaryTools;
 using LocalizationTracker.Utility;
 using LocalizationTracker.Components;
+using System.Windows.Threading;
 
 namespace LocalizationTracker.Windows
 {
     public class StringsFilter : DependencyObject, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-
+    
         private void NotifyPropertyChanged(string info)
         {
             if (PropertyChanged != null)
@@ -223,6 +224,8 @@ namespace LocalizationTracker.Windows
         public StringsFilter()
         {
             AddFirstTraitsFilter();
+            UpdatedFilterTraits.CollectionChanged += (e, s) => Updated?.Invoke();
+            ModificationTraits.CollectionChanged += (e, s) => Updated?.Invoke();
         }
 
         public bool Fits(StringEntry stringEntry)
@@ -401,7 +404,7 @@ namespace LocalizationTracker.Windows
         public void RemoveTraitFilter(TraitsFilter filter)
         {
             TraitFilters.Remove(filter);
-            //Updated?.Invoke();
+            Updated?.Invoke();
         }
 
         public void ClearTraitFilters()
@@ -439,8 +442,6 @@ namespace LocalizationTracker.Windows
         public void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             Updated?.Invoke();
-            //ModificationTraits.CollectionChanged += (e, s) => Updated?.Invoke();
-            //UpdatedFilterTraits.CollectionChanged += (e, s) => Updated?.Invoke();
         }
     }
 

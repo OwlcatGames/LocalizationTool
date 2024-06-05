@@ -5,7 +5,7 @@
   },
   "projects": {
     "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\common4gp\\common4gp.csproj": {
-      "version": "0.0.0.184",
+      "version": "0.0.0.187",
       "restore": {
         "projectUniqueName": "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\common4gp\\common4gp.csproj",
         "projectName": "common4gp",
@@ -74,7 +74,7 @@
       }
     },
     "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\LocalizationTracker\\LocalizationTracker.csproj": {
-      "version": "0.0.0.184",
+      "version": "0.0.0.187",
       "restore": {
         "projectUniqueName": "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\LocalizationTracker\\LocalizationTracker.csproj",
         "projectName": "LocalizationTracker",
@@ -228,7 +228,7 @@
       }
     },
     "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\MultiSelectTreeView\\MultiSelectTreeView.csproj": {
-      "version": "0.0.0.184",
+      "version": "0.0.0.187",
       "restore": {
         "projectUniqueName": "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\MultiSelectTreeView\\MultiSelectTreeView.csproj",
         "projectName": "MultiSelectTreeView",
@@ -300,7 +300,7 @@
       }
     },
     "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\wpf4gp\\wpf4gp.csproj": {
-      "version": "0.0.0.184",
+      "version": "0.0.0.187",
       "restore": {
         "projectUniqueName": "D:\\owlcat-localization\\owlcat-localization\\LocalizationTracker\\wpf4gp\\wpf4gp.csproj",
         "projectName": "wpf4gp",

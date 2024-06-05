@@ -27,7 +27,7 @@ namespace LocalizationTracker.Windows
 
 				m_Locale = value;
 				LocaleTraitsSelection = m_Locale != Locale.Empty;
-				//Updated?.Invoke();
+				Updated?.Invoke();
 			}
 		}
 
@@ -37,7 +37,7 @@ namespace LocalizationTracker.Windows
 			set
 			{
 				m_Not = value; 
-				//Updated?.Invoke();
+				Updated?.Invoke();
 			}
 		}
 
@@ -57,7 +57,7 @@ namespace LocalizationTracker.Windows
 
 		public TraitsFilter()
 		{
-			//Traits.CollectionChanged += (sender, args) => { Updated?.Invoke(); };
+			Traits.CollectionChanged += (sender, args) => { Updated?.Invoke(); };
 		}
 
 		public bool CheckString(StringEntry se)

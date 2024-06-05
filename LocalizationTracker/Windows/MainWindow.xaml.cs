@@ -89,8 +89,7 @@ namespace LocalizationTracker.Windows
         public StringsFilter Filter => StringManager.Filter;
 
         [NotNull]
-        public readonly DispatcherTimer FilterTimer = new() { Interval = TimeSpan.FromSeconds(0.5) };
-
+        public readonly DispatcherTimer FilterTimer = new() { Interval = TimeSpan.FromSeconds(2) };
 
         [NotNull]
         public ObservableRangeCollection<StringEntry> StringsSource { get; } = new(new List<StringEntry>());
@@ -709,6 +708,9 @@ namespace LocalizationTracker.Windows
             SaveFilterColor();
             Settings.Default.Save();
         }
+
+        public Visibility ShowOnNonModdersOnly
+            => AppConfig.Instance.ModdersVersion ? Visibility.Collapsed : Visibility.Visible;
 
         public Visibility ShowOnNonModdersOnUnityOnly
             => AppConfig.Instance.ModdersVersion ? Visibility.Collapsed : ShowOnUnityOnly;
@@ -1638,7 +1640,7 @@ namespace LocalizationTracker.Windows
 
         private void MultilineSearchWindowClosed(object sender, EventArgs e)
         {
-            Filter.SearchButton_Click(sender, null);
+            UpdateFilter(true);
         }
 
         private void OnUpdateGlossaryClick(object sender, RoutedEventArgs e)
@@ -1648,7 +1650,7 @@ namespace LocalizationTracker.Windows
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
-            Filter.SearchButton_Click(sender, e);
+            UpdateFilter(true);
         }
     }
 }
