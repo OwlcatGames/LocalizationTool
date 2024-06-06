@@ -1,6 +1,0 @@
-D:\owlcat-localization\owlcat-localization\LocalizationTracker\LocalizationTracker\publish\D3DCompiler_47_cor3.dll
-D:\owlcat-localization\owlcat-localization\LocalizationTracker\LocalizationTracker\publish\PenImc_cor3.dll
-D:\owlcat-localization\owlcat-localization\LocalizationTracker\LocalizationTracker\publish\PresentationNative_cor3.dll
-D:\owlcat-localization\owlcat-localization\LocalizationTracker\LocalizationTracker\publish\vcruntime140_cor3.dll
-D:\owlcat-localization\owlcat-localization\LocalizationTracker\LocalizationTracker\publish\wpfgfx_cor3.dll
-D:\owlcat-localization\owlcat-localization\LocalizationTracker\LocalizationTracker\publish\LocalizationTracker.exe
