@@ -287,9 +287,9 @@ namespace LocalizationTracker.Windows
                 !StringManager.Duplicates.ContainsKey(stringEntry.Data.Key))
                 return false;
 
-            if (Mode == FilterMode.Glossary_Mismatch &&
-                !Glossary.Instance.StringEntryHasTermsMismatch(stringEntry))
-                return false;
+            //if (Mode == FilterMode.Glossary_Mismatch &&
+            //    !Glossary.Instance.StringEntryHasTermsMismatch(stringEntry))
+            //    return false;
 
             if (TraitCheckOr)
             {

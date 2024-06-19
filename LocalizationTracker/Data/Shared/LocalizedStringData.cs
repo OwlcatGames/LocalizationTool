@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using LocalizationTracker.Data.Wrappers;
 using LocalizationTracker.Utility;
+using static LocalizationTracker.Data.Unreal.UnrealStringData;
 
 namespace Kingmaker.Localization.Shared
 {
@@ -56,9 +57,12 @@ namespace Kingmaker.Localization.Shared
         public List<LocaleData> Languages = new ();
 
 		[JsonInclude]
-        [JsonPropertyName("string_traits")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public List<TraitData>? StringTraits;
+		[JsonPropertyName("string_traits")]
+		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+		public List<TraitData>? StringTraits;
+
+		[JsonIgnore]
+		public StringKind Kind {  get; set; }
 
 		public LocalizedStringData(Locale source, string key)
 		{

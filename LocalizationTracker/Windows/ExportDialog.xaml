@@ -45,7 +45,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         
-        <Label Grid.Column="0" Grid.Row="0" Content="Формат" HorizontalAlignment="Right" />
+        <Label Grid.Column="0" Grid.Row="0" Content="Format" HorizontalAlignment="Right" />
         <ComboBox Grid.Column="1" Grid.Row="0" Margin="5,5,5,5" SelectedItem="{Binding ExportTarget, Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource ExportTargetValues}}" SelectionChanged="ComboBox_SelectionChanged"  />
 
         <Label Grid.Column="0" Grid.Row="1" Content="Source" HorizontalAlignment="Right" />

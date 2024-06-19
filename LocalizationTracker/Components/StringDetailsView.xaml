@@ -7,61 +7,65 @@
              xmlns:viewModel="clr-namespace:LocalizationTracker.ViewModel"
              mc:Ignorable="d"
              d:DataContext="{viewModel:StringDetailsVM}">
-  <StackPanel Orientation="Vertical" Visibility="{Binding Path=CommonVisibility}">
-    <StackPanel Orientation="Horizontal">
-      <TextBlock Width="100">Key</TextBlock>
-      <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Key, Mode=OneTime}" />
-    </StackPanel>
-    <StackPanel Orientation="Horizontal">
-      <TextBlock Width="100">Path</TextBlock>
-      <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Path, Mode=OneTime}" />
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=CommentVisibility}">
-      <TextBlock Width="100">Comment</TextBlock>
-      <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Comment, Mode=OneTime}" />
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SpeakerVisibility}">
-      <TextBlock Width="100">Speaker</TextBlock>
-      <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Speaker, Mode=OneTime}" />
-    </StackPanel>
-    <StackPanel Orientation="Horizontal" Visibility="{Binding Path=AttachmentVisibility}">
-      <TextBlock Width="100">Attachment</TextBlock>
-      <Image Stretch="Uniform" MaxWidth="600" MaxHeight="600" Source="{Binding Path=AttachedImagePath, Mode=OneTime}" />
-    </StackPanel>
-    <ListBox BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+    <StackPanel Orientation="Vertical" Visibility="{Binding Path=CommonVisibility}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Width="100">Key</TextBlock>
+            <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Key, Mode=OneTime}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Width="100">Path</TextBlock>
+            <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Path, Mode=OneTime}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=CommentVisibility}">
+            <TextBlock Width="100">Comment</TextBlock>
+            <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Comment, Mode=OneTime}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=KindVisibility}">
+            <TextBlock Width="100">Kind</TextBlock>
+            <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Kind, Mode=OneTime}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=SpeakerVisibility}">
+            <TextBlock Width="100">Speaker</TextBlock>
+            <TextBox IsReadOnly="True" BorderThickness="0" Text="{Binding Path=Speaker, Mode=OneTime}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Visibility="{Binding Path=AttachmentVisibility}">
+            <TextBlock Width="100">Attachment</TextBlock>
+            <Image Stretch="Uniform" MaxWidth="600" MaxHeight="600" Source="{Binding Path=AttachedImagePath, Mode=OneTime}" />
+        </StackPanel>
+        <ListBox BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              Margin="0,2,0,0"
              Visibility="{Binding Path=TraitsVisibility}" ItemsSource="{Binding Path=StringTraits}">
-      <ListBox.ItemContainerStyle>
-        <Style TargetType="{x:Type ListBoxItem}">
-          <Setter Property="Focusable" Value="False" />
-          <Setter Property="Padding" Value="0" />
-        </Style>
-      </ListBox.ItemContainerStyle>
-      <ListBox.ItemTemplate>
-        <DataTemplate DataType="{x:Type viewModel:TraitDetailsVM}">
-          <StackPanel Margin="0,2,0,0" Orientation="Vertical">
-            <Rectangle Width="300" Height="2" Fill="OrangeRed" HorizontalAlignment="Left" />
-            <local:TraitDetailsView />
-          </StackPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <ListBox BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type viewModel:TraitDetailsVM}">
+                    <StackPanel Margin="0,2,0,0" Orientation="Vertical">
+                        <Rectangle Width="300" Height="2" Fill="OrangeRed" HorizontalAlignment="Left" />
+                        <local:TraitDetailsView />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <ListBox BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
              ItemsSource="{Binding Path=Locales}">
-      <ListBox.ItemContainerStyle>
-        <Style TargetType="{x:Type ListBoxItem}">
-          <Setter Property="Focusable" Value="False" />
-          <Setter Property="Padding" Value="0" />
-        </Style>
-      </ListBox.ItemContainerStyle>
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-          <StackPanel Orientation="Vertical" Margin="0,4,0,0">
-            <Rectangle Width="300" Height="4" Fill="ForestGreen" HorizontalAlignment="Left" />
-            <local:LocaleDetailsView />
-          </StackPanel>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </StackPanel>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ListBoxItem}">
+                    <Setter Property="Focusable" Value="False" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+            </ListBox.ItemContainerStyle>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Vertical" Margin="0,4,0,0">
+                        <Rectangle Width="300" Height="4" Fill="ForestGreen" HorizontalAlignment="Left" />
+                        <local:LocaleDetailsView />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </StackPanel>
 </UserControl>

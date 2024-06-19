@@ -9,7 +9,7 @@
   "LocalizationPacksFolder": "LocalizationPacks",
   "IgnoreMismatchedTags": [ "mf", "name", "n" ],
   "NeedClosingTags": [ "n", "g", "d", "m" ],
-  "Locales": [ "jaJP", "trTR", "dev" ],
+  "Locales": [ "jaJP", "dev" ],
   "AddAIGeneratedTag": false,
   "DeepL": {
     "APIKey": "",

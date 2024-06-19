@@ -7,6 +7,8 @@ using System.Windows;
 using LocalizationTracker.Utility;
 using System.Text;
 using System;
+using System.Windows.Controls;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 
 namespace LocalizationTracker
@@ -53,7 +55,7 @@ namespace LocalizationTracker
             var rootPath = Directory.GetCurrentDirectory();
             if (WinFormsUtility.TryGetOpenFilePath(rootPath, _formatFilters, out var files))
             {
-                var failResults = new LinkedList<string>();
+                var failResults = new Dictionary<string, Exception>();
                 foreach (var filePath in files)
                 {
                     var importer = GetImporter(filePath);
@@ -69,7 +71,7 @@ namespace LocalizationTracker
                         }
                         catch (Exception ex)
                         {
-                            failResults.AddLast(filePath);
+                            failResults.Add(filePath, ex);
                         }
                     }
                 }
@@ -80,7 +82,7 @@ namespace LocalizationTracker
             return result;
         }
 
-        static void ProcessFails(LinkedList<string> fails)
+        static void ProcessFails(Dictionary<string, Exception> fails)
         {
             if (fails.Count == 0)
                 return;
@@ -89,8 +91,8 @@ namespace LocalizationTracker
 
             foreach (var file in fails)
             {
-                var name = Path.GetFileName(file);
-                stringBuilder.Append($"{name}\r\n");
+                var name = Path.GetFileName(file.Key);
+                stringBuilder.Append($"{name} : {file.Value.Message}");
             }
 
             MessageBox.Show($"Не удалось импортировать файлы в количестве {fails.Count}. Попробуйте открыть их в Excel и сохранить снова или перепроверить название. Список неимпортированных файлов:\r\n{stringBuilder.ToString()}");

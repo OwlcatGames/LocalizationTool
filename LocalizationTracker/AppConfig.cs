@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json.Serialization;
@@ -37,8 +38,23 @@ namespace LocalizationTracker
 			[JsonInclude]
 			public string GoogleCredentialPath = "";
 		}
-		
-		public static AppConfig Instance { get; set; }
+
+        public class SymbolsBordersConfig
+        {
+			[JsonInclude]
+			[JsonPropertyName("common")]
+			public int Common { get; set; } = 0;
+			[JsonInclude]
+			[JsonPropertyName("en")]
+			public int En { get; set; } = 0;
+			[JsonInclude]
+			[JsonPropertyName("shortAnswer")]
+			public int ShortAnswer { get; set; } = 0;
+
+        }
+
+
+        public static AppConfig Instance { get; set; }
 
 		[JsonInclude]
 		public EngineType Engine = EngineType.Unity;
@@ -98,8 +114,11 @@ namespace LocalizationTracker
 		
 		[JsonInclude]
 		public GlossaryConfig Glossary = new ();
-		
-		public string AbsStringsFolder { get; private set; } = "";
+
+		[JsonInclude]
+        public SymbolsBordersConfig SymbolsBorders = new ();
+
+        public string AbsStringsFolder { get; private set; } = "";
 
 		public string AbsAssetsFolder { get; private set; } = "";
 

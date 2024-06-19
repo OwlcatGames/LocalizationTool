@@ -53,7 +53,8 @@ public enum InlineType
     DiffDelete,
     DiffInsert,
     SpellCheckError,
-    GlossaryTerm
+    GlossaryTerm,
+    MaxLength
 }
 
 public enum InlineCollectionType
@@ -65,5 +66,6 @@ public enum InlineCollectionType
     DiffSourceNoTags,
     SpellCheck,
     Filter,
-    Glossary
+    Glossary,
+    MaxLength
 }

@@ -101,7 +101,7 @@
         </DataGrid>
         <ComboBox Name="LangGroupSelector" HorizontalAlignment="Left" Margin="10,6,0,0" VerticalAlignment="Top" Width="200" 
                   SelectionChanged="ComboBox_SelectionChanged" Height="23" FontFamily="Times New Roman" FontSize="14"/>
-        <Button Name="SaveButton" Content="Сохранить" HorizontalAlignment="Left" Margin="215,6,0,0" VerticalAlignment="Top" Width="120" FontFamily="Times New Roman" Height="23" FontSize="14"/>
-        <Button Name="SaveAllButton" Content="Сохранить все" HorizontalAlignment="Left" Margin="340,6,0,0" VerticalAlignment="Top" Width="120" FontFamily="Times New Roman" Height="23" FontSize="14"/>
+        <Button Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="215,6,0,0" VerticalAlignment="Top" Width="120" FontFamily="Times New Roman" Height="23" FontSize="14"/>
+        <Button Name="SaveAllButton" Content="Save all" HorizontalAlignment="Left" Margin="340,6,0,0" VerticalAlignment="Top" Width="120" FontFamily="Times New Roman" Height="23" FontSize="14"/>
     </Grid>
 </Window>

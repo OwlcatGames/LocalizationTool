@@ -85,12 +85,15 @@
 
             <Menu Margin="0,-25,-1199,37" BorderBrush="LightGray" BorderThickness="1">
                 <MenuItem Header="Strings">
-                    <MenuItem Header="Rescan Strings"/>
+                    <MenuItem Header="Rescan Strings" Click="RescanStrings"/>
                     <MenuItem Header="Import"/>
-                    <MenuItem Header="Update Glossary" Visibility="{Binding ShowOnNonModdersOnly}"/>
+                    <!--<MenuItem Header="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnly}"/>-->
                 </MenuItem>
                 <MenuItem Header="View">
-                    <MenuItem Header="Filter Color"/>
+                    <MenuItem Header="Filter Color">
+                        <MenuItem Header="Select Color" Click="OpenColorSelector_Click"/>
+                        <MenuItem Header="Set Default Color" Click="SetDefaultColor_Click"/>
+                    </MenuItem>
                     <MenuItem Header="Font size">
                         <TextBox x:Name="szValue" Text="{Binding FontSizeValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=N2}" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextAlignment="Center" />
                         <Slider Minimum="10" Maximum="40" Value="{Binding FontSizeValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100"/>
@@ -309,7 +312,7 @@
                 <StackPanel Orientation="Vertical" Grid.Column="4" >
                     <Border Margin="0,25,0,0"/>
                     <Button Content="Smart Commit" Click="OnSmartCommitClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
-                    <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
+                    <!--<Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>-->
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
@@ -380,12 +383,26 @@
                         </DataGridTemplateColumn.ClipboardContentBinding>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <components:InlinesTextBlock InlinesWrapper="{Binding SourceLocaleEntry.Inlines}" Style="{StaticResource TextBlockWrapStyle}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <components:InlinesTextBlock Grid.Column="0" InlinesWrapper="{Binding SourceLocaleEntry.Inlines}" Style="{StaticResource TextBlockWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center"  Foreground="{Binding SourceLocaleEntry.Color}"/>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <TextBox Text="{Binding SourceLocaleEntry.Text}" Style="{StaticResource TextBoxWrapStyle}" IsManipulationEnabled="False"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding SourceLocaleEntry.TextBlockColor}"/>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
@@ -402,12 +419,26 @@
                         </DataGridTemplateColumn.ClipboardContentBinding>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <components:InlinesTextBlock InlinesWrapper="{Binding TargetLocaleEntry.Inlines}" Style="{StaticResource TextBlockWrapStyle}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <components:InlinesTextBlock InlinesWrapper="{Binding TargetLocaleEntry.Inlines }" Style="{StaticResource TextBlockWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center"  Foreground="{Binding TargetLocaleEntry.Color}"/>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
-                                <TextBox Text="{Binding TargetLocaleEntry.Text}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding TargetLocaleEntry.Text,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding TargetLocaleEntry.TextBlockColor}"/>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>

@@ -93,6 +93,10 @@ public class UnrealStringData : IStringData
     }
 
     [JsonIgnore]
+    public StringKind Kind => m_Kind;
+
+
+    [JsonIgnore]
     public string Speaker => m_Speaker;
 
     [JsonIgnore]
