@@ -37,7 +37,7 @@ public class SheetImporter
         if (sheetContainer.Main != null)
         {
             await sheetContainer.Store(jsonConverter);
-            //Glossary.Instance.Initialize(sheetContainer.Main, true);
+            Glossary.Instance.Initialize(sheetContainer.Main, true);
             MessageBox.Show($"Glossary updated! \n Total terms: {sheetContainer.Main.Count}", "Glossary updated!", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.Yes);
 
         }
@@ -53,9 +53,9 @@ public class SheetImporter
         var sheetContainer = new GlossarySheetContainer(logger);
         var jsonConverter = new JsonSheetConverter(AppConfig.Instance.Glossary.GlossaryJSONPath);
         await sheetContainer.Bake(jsonConverter);
-        //if (sheetContainer.Main != null)
-        //{
-        //    Glossary.Instance.Initialize(sheetContainer.Main, false);
-        //}
+        if (sheetContainer.Main != null)
+        {
+            Glossary.Instance.Initialize(sheetContainer.Main, false);
+        }
     }
 }

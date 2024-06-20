@@ -41,6 +41,9 @@ public class GlossarySheet : Sheet<GlossarySheet.Term>
         public string GetExampleTranslation(Locale? locale)
         {
             var translation = string.Empty;
+            if (locale == null)
+                return Example_enGB;
+            
             if (Exact.TryGetValue(locale, out translation))
                 return translation;
             

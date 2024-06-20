@@ -81,6 +81,7 @@ namespace LocalizationTracker.Data
 
                 m_TagsList = null;
 
+                Glossary.Instance.AnalyzeLocaleEntryForTerms(this);
                 OnPropertyChanged(nameof(Text));
                 OnPropertyChanged(nameof(SymbolsCount));
                 SymbolsCount = Text.Length;
@@ -265,7 +266,7 @@ namespace LocalizationTracker.Data
                 return;
 
             ApplyMode(targetText);
-            ApplyDictionary();
+            ApplyGlossary(targetText);
             ApplyMaxSymbols();
             ApplyFilter(targetText);
         }
@@ -317,10 +318,13 @@ namespace LocalizationTracker.Data
             }
         }
 
-        public void ApplyDictionary()
+        public void ApplyGlossary(string targetText)
         {
-            //m_InlinesCollection[InlineCollectionType.Glossary] = Glossary.Instance.MakeInlines(targetText, this);
-            //Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.Glossary]);
+            if (string.IsNullOrEmpty(targetText))
+                return;
+            
+            m_InlinesCollection[InlineCollectionType.Glossary] = Glossary.Instance.MakeInlines(targetText, this);
+            Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.Glossary]);
         }
 
         public void ApplyMaxSymbols()

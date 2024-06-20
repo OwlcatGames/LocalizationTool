@@ -156,7 +156,7 @@ namespace LocalizationTracker.Windows
             }
         }
 
-       // public Glossary Glossary = new();
+        public Glossary Glossary = new();
 
         public MainWindow()
         {
@@ -220,13 +220,13 @@ namespace LocalizationTracker.Windows
                         UpdateFilter(true);
                         FilterTimer.Start();
                     };
-                //Glossary.Instance.GlossaryUpdatedEvent +=
-                //    () =>
-                //  {
-                //      FilterTimer.Stop();
-                //      UpdateFilter(true);
-                //      FilterTimer.Start();
-                //  };
+                Glossary.Instance.GlossaryUpdatedEvent +=
+                    () =>
+                  {
+                      FilterTimer.Stop();
+                      UpdateFilter(true);
+                      FilterTimer.Start();
+                  };
             }
             catch (Exception ex)
             {
@@ -439,26 +439,26 @@ namespace LocalizationTracker.Windows
                 yield return item;
 
                 yield return new Separator();
-                //item = new MenuItem { Header = "Terms Glossary" };
-                //if (selectedItem != null &&
-                //    Glossary.Instance.TryGetTermsInStringEntry(selectedItem, out var termEntries))
-                //{
-                //    foreach (var term in Glossary.Instance.FilterDuplicates(termEntries))
-                //    {
-                //        TextBlock text = new TextBlock();
-                //        string termLocale = Glossary.Instance.GetTermLocale(term.TermId, selectedItem);
-                //        text.Inlines.AddRange(
-                //            new Inline[]
-                //            {
-                //                new Run(termLocale) { FontWeight = FontWeights.Bold},
-                //                new Run("\n" + term.Comment)
-                //            });
-                //        item.Items.Add(new MenuItem { Header = text });
-                //    }
+                item = new MenuItem { Header = "Terms Glossary" };
+                if (selectedItem != null &&
+                    Glossary.Instance.TryGetTermsInStringEntry(selectedItem, out var termEntries))
+                {
+                    foreach (var term in Glossary.Instance.FilterDuplicates(termEntries))
+                    {
+                        TextBlock text = new TextBlock();
+                        string termLocale = Glossary.Instance.GetTermLocale(term.TermId, selectedItem);
+                        text.Inlines.AddRange(
+                            new Inline[]
+                            {
+                                new Run(termLocale) { FontWeight = FontWeights.Bold},
+                                new Run("\n" + term.Comment)
+                            });
+                        item.Items.Add(new MenuItem { Header = text });
+                    }
 
-                //    yield return item;
-                //    yield return new Separator();
-                //}
+                    yield return item;
+                    yield return new Separator();
+                }
 
                 yield return new Separator();
 
@@ -990,7 +990,7 @@ namespace LocalizationTracker.Windows
             }
 
             var lengths = await Task.Run(
-                () => sortedPaths.AsParallel().Select(GetWordCount).ToArray(),
+                () => sortedPaths.AsParallel().WithCancellation(ct).Select(GetWordCount).ToArray(),
                 ct);
             UpdateStringsCount(sortedPaths, lengths, 0, sortedPaths.Length, FoldersSource);
         }
@@ -1643,10 +1643,10 @@ namespace LocalizationTracker.Windows
             UpdateFilter(true);
         }
 
-        //private void OnUpdateGlossaryClick(object sender, RoutedEventArgs e)
-        //{
-        //    Glossary.Instance.UpdateGlossary();
-        //}
+        private void OnUpdateGlossaryClick(object sender, RoutedEventArgs e)
+        {
+            Glossary.Instance.UpdateGlossary();
+        }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
         {
