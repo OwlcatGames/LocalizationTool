@@ -312,7 +312,7 @@
                 <StackPanel Orientation="Vertical" Grid.Column="4" >
                     <Border Margin="0,25,0,0"/>
                     <Button Content="Smart Commit" Click="OnSmartCommitClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
-                    <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
+                    <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnly}"/>
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
@@ -400,7 +400,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                    <TextBox Grid.Column="0" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"  IsManipulationEnabled="False"/>
                                     <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding SourceLocaleEntry.TextBlockColor}"/>
                                 </Grid>
                             </DataTemplate>

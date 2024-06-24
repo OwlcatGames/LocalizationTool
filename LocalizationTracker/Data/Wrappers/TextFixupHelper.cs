@@ -17,7 +17,7 @@ public class TextFixupHelper
 
         text = text.Replace(" - ", " — ");
         text = text.Replace("\r", "");
-        text = text.TrimEnd();
+        //text = text.TrimEnd();
         while (text.Contains("  "))
         {
             text = text.Replace("  ", " ");
