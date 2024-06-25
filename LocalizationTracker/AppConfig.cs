@@ -32,6 +32,8 @@ namespace LocalizationTracker
 		public class GlossaryConfig
 		{
 			[JsonInclude]
+			public bool GlossaryIsEnabled = true;    
+			[JsonInclude]
 			public string GlossaryGSheetId = "";    
 			[JsonInclude]
 			public string GlossaryJSONPath = "";

@@ -156,8 +156,6 @@ namespace LocalizationTracker.Windows
             }
         }
 
-        public Glossary Glossary = new();
-
         public MainWindow()
         {
             try
@@ -712,6 +710,9 @@ namespace LocalizationTracker.Windows
         public Visibility ShowOnNonModdersOnly
             => AppConfig.Instance.ModdersVersion ? Visibility.Collapsed : Visibility.Visible;
 
+        public Visibility GlossaryIsEnabled =>
+            AppConfig.Instance.Glossary.GlossaryIsEnabled ? ShowOnNonModdersOnly : Visibility.Hidden;
+        
         public Visibility ShowOnNonModdersOnUnityOnly
             => AppConfig.Instance.ModdersVersion ? Visibility.Collapsed : ShowOnUnityOnly;
 

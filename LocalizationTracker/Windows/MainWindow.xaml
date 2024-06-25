@@ -87,7 +87,7 @@
                 <MenuItem Header="Strings">
                     <MenuItem Header="Rescan Strings" Click="RescanStrings"/>
                     <MenuItem Header="Import"/>
-                    <MenuItem Header="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnly}"/>
+                    <MenuItem Header="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding GlossaryIsEnabled}"/>
                 </MenuItem>
                 <MenuItem Header="View">
                     <MenuItem Header="Filter Color">
@@ -312,7 +312,7 @@
                 <StackPanel Orientation="Vertical" Grid.Column="4" >
                     <Border Margin="0,25,0,0"/>
                     <Button Content="Smart Commit" Click="OnSmartCommitClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
-                    <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding ShowOnNonModdersOnly}"/>
+                    <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding GlossaryIsEnabled}"/>
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />

@@ -30,14 +30,22 @@ public class Glossary
     private const char TERMS_SEPARATOR = '|';
     private const char TERM_PARTS_SEPARATOR = '*';
     
-    public Glossary()
+    public static void SetupInstance()
     {
-        Instance = this;
-        m_Importer.ReadSheetFromJson();
+        Instance = new Glossary();
+        if (!AppConfig.Instance.Glossary.GlossaryIsEnabled)
+            return;
+
+        Instance.ReadSheetFromJson();
     }
+    
+    public void ReadSheetFromJson() => m_Importer.ReadSheetFromJson();
 
     public void UpdateGlossary()
     {
+        if (!AppConfig.Instance.Glossary.GlossaryIsEnabled)
+            return;
+        
         m_Importer.ReadSheetFromGoogle();
     }
     

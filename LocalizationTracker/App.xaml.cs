@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Threading;
+using LocalizationTracker.Tools.GlossaryTools;
 using LocalizationTracker.Utility;
 using wpf4gp;
 
@@ -62,6 +63,8 @@ namespace LocalizationTracker
 				}
 
 				AppConfig.SetupInstance(config);
+				Glossary.SetupInstance();
+				
 			}
 			catch (Exception ex)
 			{
