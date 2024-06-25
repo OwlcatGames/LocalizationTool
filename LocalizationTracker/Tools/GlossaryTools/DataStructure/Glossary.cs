@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -9,6 +10,7 @@ using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
 using LocalizationTracker.Data;
 using LocalizationTracker.Logic;
+using LocalizationTracker.Utility;
 using LocalizationTracker.Windows;
 
 namespace LocalizationTracker.Tools.GlossaryTools;
@@ -51,13 +53,18 @@ public class Glossary
             m_Glossary[term.Id] = term;
         }
         
+        RecalculateTerms();
+        if (updateRequired)
+            GlossaryUpdatedEvent?.Invoke();
+    }
+
+    public void RecalculateTerms()
+    {
         m_ProcessedStrings.Clear();
         m_TermTemplateCollection = new();
         m_TermsEntryMap.Clear();
         m_TermsEntryNoTagsMap.Clear();
         PrepareTermTemplates();
-        if (updateRequired)
-            GlossaryUpdatedEvent?.Invoke();
     }
 
     private void PrepareTermTemplates()
@@ -125,16 +132,18 @@ public class Glossary
         foreach (var termEntry in targetEntriesCollection[localeEntry.StringKey][localeEntry.Locale])
         {
             string substring;
-            if (termEntry.StartIndex > cursor)
+            if (termEntry.StartIndex > cursor && text.TryGetSubstring(cursor, termEntry.StartIndex - cursor, out var s1))
             {
-                result.Add(new InlineTemplate(text.Substring(cursor, termEntry.StartIndex - cursor)));
+                result.Add(new InlineTemplate(s1));
             }
 
-            if (text.Length - 1 < termEntry.EndIndex)
-                substring = text.Substring(termEntry.StartIndex, textEnd - 1 - termEntry.StartIndex);
-            else
-                substring = text.Substring(termEntry.StartIndex, termEntry.EndIndex - termEntry.StartIndex);
+            var startIndex = termEntry.StartIndex;
+            var length = textEnd - 1 - termEntry.StartIndex;
+            if (text.Length - 1 >= termEntry.EndIndex)
+                length = termEntry.EndIndex - termEntry.StartIndex;
 
+            if (!text.TryGetSubstring(startIndex, length, out substring))
+                continue;
 
             bool mismatch = localeEntry.TryGetPairedLocale(out var pairedLocale) &&
                             !TermHasSiblingInOtherLocale(termEntry.TermId, localeEntry.StringKey, pairedLocale);
@@ -143,9 +152,9 @@ public class Glossary
             cursor = termEntry.EndIndex;
         }
 
-        if (cursor < textEnd)
+        if (cursor < textEnd && text.TryGetSubstring(cursor, textEnd - cursor, out var subs) )
         {
-            result.Add(new InlineTemplate(text.Substring(cursor, textEnd - cursor)));    
+            result.Add(new InlineTemplate(subs));    
         }
         
         return new InlinesWrapper(result.ToArray());

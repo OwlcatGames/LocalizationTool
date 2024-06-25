@@ -873,7 +873,7 @@ namespace LocalizationTracker.Windows
 
 
             // now files = ExistingModified + New
-
+            Glossary.Instance.RecalculateTerms();
             var newLoadedEntries = strings
                 .AsParallel()
                 .WithCancellation(ct)

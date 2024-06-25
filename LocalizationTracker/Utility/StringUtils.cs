@@ -122,5 +122,19 @@ namespace LocalizationTracker.Utility
 
         public static bool MatchesPattern(string text, string pattern, bool ignoreCase)
             => Regex.Match(text, pattern, ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None).Success;
+        
+        public static bool TryGetSubstring(this string input, int startIndex, int length, out string result)
+        {
+            result = string.Empty;
+            if (input.Length < startIndex + length)
+            {
+                Console.Error.Write(
+                    $"Error getting substring from {input} from start {startIndex} and length {length}");
+                return false;
+            }
+
+            result = input.Substring(startIndex, length);
+            return true;
+        }
     }
 }
