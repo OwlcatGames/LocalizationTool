@@ -152,8 +152,8 @@ namespace LocalizationTracker
 						($"Failed to find Strings folder neither at ${Path.Combine(currentDirectory, instance.StringsFolder)} nor at ${instance.StringsFolder}"); 
 				}
             }
-            instance.AbsStringsFolder = 
-			instance.AbsAssetsFolder = string.IsNullOrWhiteSpace(instance.AssetsFolder) ? "" : Path.GetFullPath(Path.Combine(currentDirectory, instance.AssetsFolder));
+            instance.AbsStringsFolder = string.IsNullOrWhiteSpace(instance.StringsFolder) ? "" : Path.GetFullPath(Path.Combine(currentDirectory, instance.StringsFolder));
+            instance.AbsAssetsFolder = string.IsNullOrWhiteSpace(instance.AssetsFolder) ? "" : Path.GetFullPath(Path.Combine(currentDirectory, instance.AssetsFolder));
 			instance.AbsBlueprintsFolder = string.IsNullOrWhiteSpace(instance.BlueprintsFolder) ? "" : Path.GetFullPath(Path.Combine(currentDirectory, instance.BlueprintsFolder));
 		}
 	}
