@@ -142,7 +142,17 @@ namespace LocalizationTracker
 		{
 			Instance = instance;
             var currentDirectory = Directory.GetCurrentDirectory();
-            instance.AbsStringsFolder = Path.GetFullPath(Path.Combine(currentDirectory, instance.StringsFolder));
+			var absPath = Path.GetFullPath(Path.Combine(currentDirectory, instance.StringsFolder));
+            if (!Directory.Exists(absPath))
+            {
+				absPath = instance.StringsFolder;
+				if(!Directory.Exists(absPath))
+				{
+					throw new FileNotFoundException
+						($"Failed to find Strings folder neither at ${Path.Combine(currentDirectory, instance.StringsFolder)} nor at ${instance.StringsFolder}"); 
+				}
+            }
+            instance.AbsStringsFolder = 
 			instance.AbsAssetsFolder = string.IsNullOrWhiteSpace(instance.AssetsFolder) ? "" : Path.GetFullPath(Path.Combine(currentDirectory, instance.AssetsFolder));
 			instance.AbsBlueprintsFolder = string.IsNullOrWhiteSpace(instance.BlueprintsFolder) ? "" : Path.GetFullPath(Path.Combine(currentDirectory, instance.BlueprintsFolder));
 		}

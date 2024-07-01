@@ -39,13 +39,82 @@ namespace LocalizationTracker
 
 			if (!File.Exists(configPath))
 			{
-				ShowErrorAndShutdown($"Can't find config: {configPath}");
+				ShowErrorAndShutdown($"Can't find config at relative path: {configPath}");
 				return;
 			}
 
-			try
+            var jsonText = File.ReadAllText(configPath);
+
+			//If "Strings" folder path in config contains a single "\" character then
+			// the whole json is invalid and it will crush the app.
+			if(!CheckJsonIsValid(jsonText))
 			{
-				var config = JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(configPath), JsonSerializerHelpers.JsonSerializerOptions);
+				jsonText = jsonText.Replace("\\", "/");
+				if (!CheckJsonIsValid(jsonText))
+				{
+					ShowErrorAndShutdown($"config.json contents seems to be broken. Check that path values do not contain \\ (forwardslashes), replace them with / (backslashes). After fixing config values try to restart the app.");
+					return;
+				}
+				//Maybe we fixed json values, rewrite fixed json back to config.
+				else
+				{
+					File.WriteAllText(configPath, jsonText);
+				}
+            }
+
+            try
+            {
+
+                var config = JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(configPath), JsonSerializerHelpers.JsonSerializerOptions);
+				
+				if(config == null)
+				{
+					ShowErrorAndShutdown($"Loading config failed. Check that your config is a valid JSON. Path: {configPath}");
+					return;
+				}
+
+				if(config != null && string.IsNullOrEmpty(config.StringsFolder))
+				{
+                    string messageBoxText = "Path to \"Strings\" folder is missing in config file. Do you want to select the folder?";
+                    string caption = "Localization Tool";
+                    MessageBoxButton button = MessageBoxButton.YesNo;
+                    MessageBoxImage icon = MessageBoxImage.Warning;
+                    MessageBoxResult result;
+
+                    result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
+
+					if (result == MessageBoxResult.Yes)
+					{
+						using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+						{
+							System.Windows.Forms.DialogResult folderResult = dialog.ShowDialog();
+							if (folderResult == System.Windows.Forms.DialogResult.OK)
+							{
+								config.StringsFolder = dialog.SelectedPath;
+								Console.WriteLine($"Selected path {config.StringsFolder}");
+								jsonText = jsonText.Replace("\"StringsFolder\": \"\"", $"\"StringsFolder\": \"{config.StringsFolder}\"");
+								File.WriteAllText(configPath, jsonText);
+							}
+							else
+							{
+								ShowErrorAndShutdown($"config.StringsFolder is empty. You have to set up StringsFolder before using Localization Tool.");
+								return;
+							}
+						}
+					}
+					else
+					{
+						ShowErrorAndShutdown($"Strings folder path is not set in config.json. Please specify the path and restart the app");
+						return;
+                    }
+
+                }
+
+				if (config.StringsFolder.Contains("\\"))
+				{
+                    config.StringsFolder = config.StringsFolder.Replace("\\", "/");
+				}
+
 				if (!Directory.Exists(config.StringsFolder))
 				{
 					ShowErrorAndShutdown($"config.StringsFolder does not exist: {config.StringsFolder}");
@@ -71,6 +140,41 @@ namespace LocalizationTracker
 				ShowErrorAndShutdown(ex.Message + "\n" + ex.StackTrace);
 			}
 		}
+
+        /// <summary>
+        /// This method is used to check JSON validity. 
+        /// In case of invalid JSON we don't get cached exception,
+        /// so we can try cache the exception in the way we want it.
+        /// If we use JsonSerializer.Deserialize inside try block on invalid json,
+		/// JsonSerializer cahces exception internally, so our outer cache don't work and it crashes the app.
+		/// 
+		/// The most common case is when the path in config contans \ instead of /,
+		/// then json treats \ not like path separator, but like a special sequence start. It makes json invalid.
+		/// But in that case we don't want to crash the app, we want to try fixing the value by replacing \ with /.
+        /// </summary>
+        /// <param name="jsonText"></param>
+        /// <returns></returns>
+        private bool CheckJsonIsValid(string jsonText)
+		{
+			var result = true;
+			if (jsonText == null)
+				return false;
+            try
+            {
+                using (JsonDocument doc = JsonDocument.Parse(jsonText))
+                {
+                    // it's just a test
+                }
+                result =  true;
+            }
+            catch (JsonException)
+            {
+                result = false;
+            }
+
+			return result;
+
+        }
 
 		private void ShowErrorAndShutdown(string error)
 		{

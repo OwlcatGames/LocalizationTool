@@ -67,12 +67,12 @@ public class TermTemplate
 
         entry.caseError |= termPartEntry.caseError;
         var previousIndex = termPartEntry.index;
+        entry.startIndex = previousIndex + offset;
         entry.endIndex = previousIndex + termParts[0].Length + offset;
         if (previousIndex != 0 &&
             !SpellCheck.WordTeminations.Contains(text[previousIndex - 1]))
             return TermSearchResult.FoundPart;
         
-        entry.startIndex = previousIndex + offset;
         for (int i = 1; i < termParts.Count; i++)
         {
             string termPart = termParts[i];
@@ -82,10 +82,10 @@ public class TermTemplate
             if (!TryFindTermPart(text, termParts[i], previousIndex, false, out termPartEntry))
                 return TermSearchResult.FoundPart;
             
-            entry.endIndex = termPartEntry.index + termParts[i].Length + offset;
             if ((termPartEntry.index - previousIndex - termParts[i - 1].Length) > MAX_SYMBOLS_IN_ASTERISK)
                 return TermSearchResult.FoundPart;
-
+            
+            entry.endIndex = termPartEntry.index + termParts[i].Length + offset;
             entry.caseError |= termPartEntry.caseError;
             previousIndex = termPartEntry.index;
         }

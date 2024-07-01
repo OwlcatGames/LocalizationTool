@@ -146,10 +146,7 @@ public class Glossary
             }
 
             var startIndex = termEntry.StartIndex;
-            var length = textEnd - 1 - termEntry.StartIndex;
-            if (text.Length - 1 >= termEntry.EndIndex)
-                length = termEntry.EndIndex - termEntry.StartIndex;
-
+            var length = termEntry.EndIndex - termEntry.StartIndex;
             if (!text.TryGetSubstring(startIndex, length, out substring))
                 continue;
 
