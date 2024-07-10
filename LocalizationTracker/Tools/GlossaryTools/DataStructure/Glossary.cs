@@ -135,7 +135,14 @@ public class Glossary
         if (!targetEntriesCollection.ContainsKey(localeEntry.StringKey) ||
             !targetEntriesCollection[localeEntry.StringKey].ContainsKey(localeEntry.Locale))
             return new InlinesWrapper();
-        
+
+        targetEntriesCollection[localeEntry.StringKey][localeEntry.Locale].Sort(delegate(TermEntry s1, TermEntry s2)
+            {
+                if (s1.StartIndex < s2.StartIndex) 
+                    return -1;
+
+                return 1;
+            });
         
         foreach (var termEntry in targetEntriesCollection[localeEntry.StringKey][localeEntry.Locale])
         {
@@ -144,6 +151,11 @@ public class Glossary
             {
                 result.Add(new InlineTemplate(s1));
             }
+
+            if (termEntry.EndIndex <= cursor ||
+                termEntry.StartIndex <= cursor &&
+                termEntry.EndIndex > cursor)
+                continue;
 
             var startIndex = termEntry.StartIndex;
             var length = termEntry.EndIndex - termEntry.StartIndex;
@@ -266,10 +278,15 @@ public class Glossary
             termsList = new List<TermEntry> { termEntry };
             localesMap[localeEntry.Locale] = termsList;
         }
-        else
+
+       /* foreach (var t in termsList)
         {
-            localesMap[localeEntry.Locale].Add(termEntry);
-        }
+            if (t.StartIndex <= termEntry.StartIndex &&
+                t.EndIndex >= termEntry.StartIndex)
+                return;
+        }*/
+        
+        termsList.Add(termEntry);
     }
 
     public bool TryGetTermsInStringEntry(StringEntry stringEntry, out List<TermEntry> termEntries)
