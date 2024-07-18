@@ -1,7 +1,10 @@
-﻿using LocalizationTracker.Data;
+﻿using Kingmaker.Localization.Shared;
+using LocalizationTracker.Data;
 using LocalizationTracker.Logic;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 
 namespace LocalizationTracker.Windows
@@ -98,6 +101,31 @@ namespace LocalizationTracker.Windows
             {
                 LogGrid.ItemsSource = result.ImportEntries;
             }
+        }
+
+        void ShowImportedStringsButton(object sender, RoutedEventArgs e)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            var langs = LangGroupSelector.Items[LangGroupSelector.SelectedIndex] as string;
+
+            if (_result.ImportResults.TryGetValue(langs, out var result))
+            {
+                var results = result.ImportEntries.Select(s => s.Path);
+
+                foreach (var entry in results)
+                {
+                    stringBuilder.AppendLine(entry.ToString());
+                }
+            }
+
+            StringManager.Filter.NameMultiline = stringBuilder.ToString();
+
+            var findLocale = langs.Split(":");
+            StringEntry.SourceLocale = new Locale(findLocale[0]);
+            StringEntry.TargetLocale = new Locale(findLocale[1]);
+
+            StringManager.Filter.ForceUpdateFilter();
         }
 
         #endregion ImportResultsWindow

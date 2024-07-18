@@ -86,6 +86,11 @@ namespace LocalizationTracker.Windows
                     Updated?.Invoke();
             }
         }
+
+        public void ForceUpdateFilter()
+        {
+            Updated?.Invoke();
+        }
         public string NameMultiline
         {
             get => m_Name;

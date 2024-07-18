@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using LocalizationTracker.Tools.GlossaryTools;
@@ -22,8 +23,10 @@ namespace LocalizationTracker
             Dispatcher.UnhandledException += HandleThreadException;
 
             AppDomain.CurrentDomain.UnhandledException += HandleGlobalException;
-            
-			ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+            Task.Run(() => OwlcatProtocolListener.StartListeningAsync());
+
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
 			
 			string configPath;
 			if (e.Args.Length > 0)
@@ -222,6 +225,12 @@ namespace LocalizationTracker
             {
                 ex.ShowMessageBox("Unexpected error.", "Unhandled exception");
             }
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            OwlcatProtocolListener.StopListening();
+            base.OnExit(e);
         }
 
     }

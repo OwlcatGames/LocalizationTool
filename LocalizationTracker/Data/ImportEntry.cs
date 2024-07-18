@@ -7,7 +7,7 @@ namespace LocalizationTracker.Data
 	{
 		public ImportStatus Status { get; set; }
 
-		public string Messages { get; private set; }
+		public string Messages { get; set; }
 
 		public string Key { get; set; }
 

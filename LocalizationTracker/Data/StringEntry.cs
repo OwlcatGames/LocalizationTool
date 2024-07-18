@@ -14,11 +14,16 @@ using System.Windows;
 using System.Windows.Media;
 using LocalizationTracker.Data.Unreal;
 using LocalizationTracker.Data.Wrappers;
+using System.ComponentModel;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Google.Apis.Sheets.v4.Data;
 
 namespace LocalizationTracker.Data
 {
     public partial class StringEntry : IComparable<StringEntry>
     {
+        public static event Action<string> StaticPropertyChanged;
+
         public static string SelectedDirPrefix;
 
         private static Locale? s_SourceLocale;
@@ -33,6 +38,7 @@ namespace LocalizationTracker.Data
                 if (value == s_SourceLocale)
                     return;
                 s_SourceLocale = value;
+                StaticPropertyChanged?.Invoke(nameof(SourceLocale));
                 UpdateAllLocaleEntries();
             }
         }
@@ -45,6 +51,7 @@ namespace LocalizationTracker.Data
                 if (value == s_TargetLocale)
                     return;
                 s_TargetLocale = value;
+                StaticPropertyChanged?.Invoke(nameof(TargetLocale));
                 UpdateAllLocaleEntries();
             }
         }

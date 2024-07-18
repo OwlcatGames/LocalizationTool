@@ -35,18 +35,20 @@ class StringsArchiveUnreal : StringsArchive
             .Select(f => f.FullName)
             .ToHashSet();
 
-        if (skipUnmodified!=null) 
-        {
-            foreach (var se in skipUnmodified)
-                files.Remove(se.AbsolutePath);
-        }
+        //if (skipUnmodified!=null) 
+        //{
+        //    foreach (var se in skipUnmodified)
+        //        files.Remove(se.Key);
+        //}
 
         var newLoadedEntries = files
             .AsParallel()
             .WithCancellation(ct)
-            .Select(LoadData); // todo: save the list, noting which strings go to which file?
+            .Select(LoadData)
+            .ToList();
+; // todo: save the list, noting which strings go to which file?
 
-        return newLoadedEntries.ToList();
+        return newLoadedEntries;
     }
 
     private IStringData LoadData(string absolutePath)
@@ -158,8 +160,9 @@ class StringsArchiveUnreal : StringsArchive
 
     public override bool IsFileModified(IStringData str)
     {
-        var absolutePath = ((UnrealStringData)str).SourceFile;
-        return !File.Exists(absolutePath) || File.GetLastWriteTime(absolutePath) > str.ModificationDate;
+        return true;
+        //var absolutePath = ((UnrealStringData)str).SourceFile;
+        //return !File.Exists(absolutePath) || File.GetLastWriteTime(absolutePath) > str.ModificationDate;
     }
 
     public override bool HasUnsavedChanges => m_HasUnsavedChanges;

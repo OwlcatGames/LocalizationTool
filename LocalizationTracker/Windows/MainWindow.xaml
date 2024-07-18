@@ -368,7 +368,7 @@
                         <DataGridTemplateColumn.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Width="45" VerticalAlignment="Center">Source</TextBlock>
-                                <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocale, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocaleValues}" />
+                                <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocale,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocaleValues}" />
                                 <StackPanel Name="TraitSelection" Orientation="Horizontal" Visibility="Collapsed">
                                     <TextBlock Width="30" Margin="20,0,0,0" VerticalAlignment="Center">Trait</TextBlock>
                                     <!--                                    <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceTrait, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceTraitValues}" />
@@ -411,7 +411,7 @@
                         <DataGridTemplateColumn.Header>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Width="45" VerticalAlignment="Center">Target</TextBlock>
-                                <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.TargetLocale, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.TargetLocaleValues}" />
+                                <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.TargetLocale, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.TargetLocaleValues}" />
                             </StackPanel>
                         </DataGridTemplateColumn.Header>
                         <DataGridTemplateColumn.ClipboardContentBinding>

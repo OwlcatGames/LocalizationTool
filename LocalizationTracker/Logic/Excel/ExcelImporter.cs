@@ -50,7 +50,7 @@ namespace LocalizationTracker.Excel
                 foreach (var row in rows)
                 {
                     var result = ImportRow(row);
-                    if (result != null)
+                    if (result != null && !string.IsNullOrEmpty(result.Key))
                     {
                         result.MakeDiffs();
                         results.Add(result);

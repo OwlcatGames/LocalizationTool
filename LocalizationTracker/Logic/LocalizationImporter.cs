@@ -9,6 +9,8 @@ using System.Text;
 using System;
 using System.Windows.Controls;
 using DocumentFormat.OpenXml.Wordprocessing;
+using LocalizationTracker.Windows;
+using DocumentFormat.OpenXml.Drawing.Charts;
 
 
 namespace LocalizationTracker
@@ -49,7 +51,7 @@ namespace LocalizationTracker
         #endregion Fields
         #region Methods
 
-        public static ImportRequestResult Import()
+        public static ImportRequestResult Import(Window window)
         {
             var result = new ImportRequestResult();
             var rootPath = Directory.GetCurrentDirectory();
@@ -76,13 +78,13 @@ namespace LocalizationTracker
                     }
                 }
 
-                ProcessFails(failResults);
+                ProcessFails(window, failResults);
             }
 
             return result;
         }
 
-        static void ProcessFails(Dictionary<string, Exception> fails)
+        static void ProcessFails(Window window,Dictionary<string, Exception> fails)
         {
             if (fails.Count == 0)
                 return;
@@ -95,7 +97,12 @@ namespace LocalizationTracker
                 stringBuilder.Append($"{name} : {file.Value.Message}");
             }
 
-            MessageBox.Show($"Не удалось импортировать файлы в количестве {fails.Count}. Попробуйте открыть их в Excel и сохранить снова или перепроверить название. Список неимпортированных файлов:\r\n{stringBuilder.ToString()}");
+            var errorWindow = new ImportErrorWindow(fails)
+            {
+                Owner = window,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+            errorWindow.ShowDialog();
         }
 
         static IImporter GetImporter(string filePath)

@@ -28,7 +28,7 @@
                 </Grid>
             </Button.Content>
         </Button>
-        <Popup Name="PopupTraits" StaysOpen="False" Placement="Bottom" PlacementTarget="{Binding ElementName=ButtonShowPopup}">
+        <Popup Name="PopupTraits" StaysOpen="False" Placement="Bottom" ScrollViewer.CanContentScroll="True" PlacementTarget="{Binding ElementName=ButtonShowPopup}">
             <Border Background="White" BorderBrush="Black" BorderThickness="1">
                 <ListBox Name="CheckedListBox" SelectionMode="Multiple"
                  ItemsSource="{Binding Traits}">

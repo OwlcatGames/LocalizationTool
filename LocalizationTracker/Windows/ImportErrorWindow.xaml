@@ -1,0 +1,8 @@
+<Window x:Class="LocalizationTracker.Windows.ImportErrorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ErrorWindow" Height="200"  Width="350">
+    <Grid>
+        <TextBlock x:Name="ErrorTextBlock" TextWrapping="Wrap" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,0,0,0" Width="auto" Height="auto"/>
+    </Grid>
+</Window>

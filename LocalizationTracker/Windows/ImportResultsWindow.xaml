@@ -22,9 +22,13 @@
         <Style TargetType="TextBlock" x:Key="TextBlockWrapStyle">
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
+        <Style TargetType="TextBox" x:Key="TextBoxWrapStyle">
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+        </Style>
     </Window.Resources>
     <Grid>
-        <DataGrid x:Name="LogGrid" Margin="0,34,0,0">
+        <DataGrid x:Name="LogGrid" Margin="0,34,0,0" ClipboardCopyMode="IncludeHeader">
             <DataGrid.Columns>
                 <DataGridTextColumn Width="50" MinWidth ="40" 
                                     Header="Key" 
@@ -55,6 +59,7 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn Width="150" MinWidth ="40" 
+                                    IsReadOnly="False"
                                     Header="Messages" 
                                     SortMemberPath="Messages"
                                     Binding="{Binding Path=(data:ImportEntry.Messages)}">
@@ -65,7 +70,7 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTemplateColumn Width="400" MinWidth ="40" 
-                                IsReadOnly="True"
+                                IsReadOnly="False"
                                 Header="Source" 
                                 ClipboardContentBinding="{Binding Path=(data:ImportEntry.CurrentSource)}"
                                 SortMemberPath="CurrentSource">
@@ -74,9 +79,14 @@
                             <components:InlinesTextBlock InlinesWrapper="{Binding Path=(data:ImportEntry.SourceDiffs)}" Style="{StaticResource TextBlockWrapStyle}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Path=ImportSource, Mode=OneWay}" Style="{StaticResource TextBoxWrapStyle}" IsManipulationEnabled="False" TextWrapping="Wrap"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Width="400" MinWidth ="40" 
-                                IsReadOnly="True"
+                                IsReadOnly="False"
                                 Header="Old Target" 
                                 ClipboardContentBinding="{Binding Path=(data:ImportEntry.CurrentTarget)}"
                                 SortMemberPath="CurrentTarget">
@@ -85,9 +95,14 @@
                             <components:InlinesTextBlock InlinesWrapper="{Binding Path=(data:ImportEntry.TargetDiffs)}" Style="{StaticResource TextBlockWrapStyle}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Path=CurrentTarget, Mode=OneWay}" Style="{StaticResource TextBoxWrapStyle}" IsManipulationEnabled="False" TextWrapping="Wrap"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Width="400" MinWidth ="40" 
-                                IsReadOnly="True"
+                                IsReadOnly="False"
                                 Header="Result" 
                                 ClipboardContentBinding="{Binding Path=(data:ImportEntry.ImportResult)}"
                                 SortMemberPath="ImportResult">
@@ -96,6 +111,11 @@
                             <components:InlinesTextBlock InlinesWrapper="{Binding Path=(data:ImportEntry.ResultDiffs)}" Style="{StaticResource TextBlockWrapStyle}"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
+                    <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Path=ImportResult, Mode=OneWay}" Style="{StaticResource TextBoxWrapStyle}" IsManipulationEnabled="False" TextWrapping="Wrap"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellEditingTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
@@ -103,5 +123,6 @@
                   SelectionChanged="ComboBox_SelectionChanged" Height="23" FontFamily="Times New Roman" FontSize="14"/>
         <Button Name="SaveButton" Content="Save" HorizontalAlignment="Left" Margin="215,6,0,0" VerticalAlignment="Top" Width="120" FontFamily="Times New Roman" Height="23" FontSize="14"/>
         <Button Name="SaveAllButton" Content="Save all" HorizontalAlignment="Left" Margin="340,6,0,0" VerticalAlignment="Top" Width="120" FontFamily="Times New Roman" Height="23" FontSize="14"/>
+        <Button Click="ShowImportedStringsButton" Content="Show Imported Strings" HorizontalAlignment="Right" Margin="340,6,15,0" VerticalAlignment="Top" Width="150" FontFamily="Times New Roman" Height="23" FontSize="14"/>
     </Grid>
 </Window>

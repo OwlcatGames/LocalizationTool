@@ -120,6 +120,7 @@ namespace LocalizationTracker.Windows
             set
             {
                 StringEntry.SourceLocale = value;
+                NotifyPropertyChanged(nameof(SourceLocale));
                 UpdateFilter();
             }
         }
@@ -132,6 +133,7 @@ namespace LocalizationTracker.Windows
             set
             {
                 StringEntry.TargetLocale = value;
+                NotifyPropertyChanged(nameof(TargetLocale));
                 UpdateFilter();
             }
         }
@@ -249,6 +251,14 @@ namespace LocalizationTracker.Windows
 
             Strings.AutoGenerateColumns = false;
             Folders.SelectionChanged += (_, _) => UpdateStringsView();
+            StringEntry.StaticPropertyChanged += (propertyName) =>
+            {
+                if (propertyName == nameof(StringEntry.SourceLocale) || propertyName == nameof(StringEntry.TargetLocale))
+                {
+                    OnPropertyChanged(nameof(SourceLocale));
+                    OnPropertyChanged(nameof(TargetLocale));
+                }
+            };
             UpdateFilterMode();
             Rescan();
         }
@@ -712,7 +722,7 @@ namespace LocalizationTracker.Windows
 
         public Visibility GlossaryIsEnabled =>
             AppConfig.Instance.Glossary.GlossaryIsEnabled ? ShowOnNonModdersOnly : Visibility.Hidden;
-        
+
         public Visibility ShowOnNonModdersOnUnityOnly
             => AppConfig.Instance.ModdersVersion ? Visibility.Collapsed : ShowOnUnityOnly;
 
@@ -991,7 +1001,7 @@ namespace LocalizationTracker.Windows
             }
 
             var lengths = await Task.Run(
-                () => sortedPaths.AsParallel().WithCancellation(ct).Select(GetWordCount).ToArray(),
+                () => sortedPaths.AsParallel().Select(GetWordCount).ToArray(),
                 ct);
             UpdateStringsCount(sortedPaths, lengths, 0, sortedPaths.Length, FoldersSource);
         }
@@ -1419,7 +1429,7 @@ namespace LocalizationTracker.Windows
         {
             try
             {
-                var result = LocalizationImporter.Import();
+                var result = LocalizationImporter.Import(this);
 
                 if (result.ImportResults.Count != 0)
                 {
