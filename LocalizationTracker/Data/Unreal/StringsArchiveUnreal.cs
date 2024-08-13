@@ -73,9 +73,7 @@ class StringsArchiveUnreal : StringsArchive
             throw new IOException($"Failed to parse json file: {absolutePath}. Wrong object type.");
         }
 
-        {
-            usd.SourceFile = absolutePath;
-        }
+        usd.PostLoad(absolutePath);
 
         return usd;
     }

@@ -58,9 +58,9 @@ namespace LocalizationTracker.Logic
 
 			foreach (var str in newStrings)
 			{
-				if (!str.Data.StringTraits.Select(s => s.Trait).Contains("NotUsed") && str.AssetStatus == AssetStatus.NotUsed)
+				if (str.AssetStatus == AssetStatus.NotUsed)
 				{
-					str.Data.AddStringTrait("NotUsed");
+					str.Data.AddStringTrait("NotUsed", true);
 				}
 			}
 

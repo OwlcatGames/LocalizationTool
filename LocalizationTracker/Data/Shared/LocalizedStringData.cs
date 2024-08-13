@@ -173,7 +173,7 @@ namespace Kingmaker.Localization.Shared
 			StringTraits?.RemoveAll(t => t.Trait == trait);
 		}
 
-		public ITraitData CreateTraitData(string trait) => new TraitData(trait);
+		public ITraitData CreateTraitData(string trait, bool isVirtual=false) => new TraitData(trait);
 
 		private LocaleData? GetLocale(Locale locale)
 		{

@@ -42,4 +42,7 @@ public class UnrealTraitData:ITraitData
         get => LocaleText;
         set => LocaleText=value;
     }
+
+    // virtual traits get created when string is loaded and are never saved
+    public bool IsVirtual { get; set; }
 }

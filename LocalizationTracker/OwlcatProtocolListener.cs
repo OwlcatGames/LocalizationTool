@@ -121,7 +121,7 @@ namespace LocalizationTracker
 
             StringManager.Filter.Name = path;
             StringManager.Filter.ForceUpdateFilter();
-            
+
             string result = $"Processed path: {path}";
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(result);
             resp.ContentLength64 = buffer.Length;
@@ -132,8 +132,11 @@ namespace LocalizationTracker
 
         public static void StopListening()
         {
-            _listener.Stop();
-            _listener.Close();
+            if (_listener != null)
+            {
+                _listener.Stop();
+                _listener.Close();
+            }
         }
     }
 }

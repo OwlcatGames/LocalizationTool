@@ -56,7 +56,7 @@ public interface IStringData
         traitData.ModificationDate = DateTimeOffset.UtcNow;
     }
 
-    ITraitData CreateTraitData(string trait);
+    ITraitData CreateTraitData(string trait, bool isVirtual=false);
 
     public void RemoveTrait(Locale locale, string trait)
     {
@@ -64,12 +64,12 @@ public interface IStringData
         localeData?.RemoveTraitInternal(trait);
     }
 
-    public void AddStringTrait(string trait)
+    public void AddStringTrait(string trait, bool isVirtual = false)
     {
         var traitData = StringTraits.FirstOrDefault(t => t.Trait == trait);
         if (traitData == null)
         {
-            traitData = CreateTraitData(trait);
+            traitData = CreateTraitData(trait, isVirtual);
             AddTraitInternal(traitData);
         }
 

@@ -1,8 +1,10 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
+using Kingmaker.Localization.Shared;
 
 namespace LocalizationTracker
 {
@@ -92,6 +94,9 @@ namespace LocalizationTracker
 		public string[] Locales = System.Array.Empty<string>();
 
 		[JsonInclude]
+		public string UnrealNativeLocale = "ru";
+
+		[JsonInclude]
 		public bool AddDefaultLocales = true;
 
         [JsonInclude]
@@ -137,6 +142,8 @@ namespace LocalizationTracker
 			!Instance.ModdersVersion && 
 			!string.IsNullOrEmpty(Instance.DeepL.APIKey);
 
+		[JsonInclude]
+		public bool HighlightMaxSymbols { get; set; } = true;
 
 		public static void SetupInstance(AppConfig instance)
 		{

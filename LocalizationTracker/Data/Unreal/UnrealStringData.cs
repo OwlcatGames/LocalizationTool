@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text.Json.Serialization;
+using System.Windows.Forms;
 using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data.Wrappers;
 using LocalizationTracker.Utility;
@@ -76,6 +78,8 @@ public class UnrealStringData : IStringData
     [JsonInclude]
     [JsonPropertyName("string_traits")]
     public List<UnrealTraitData> m_StringTraits = new();
+    
+    private List<UnrealTraitData> m_VirtualStringTraits = new(); // not serialized
 
     string? m_FolderPath;
 
@@ -149,7 +153,7 @@ public class UnrealStringData : IStringData
     public IEnumerable<ILocaleData> Languages => m_Languages;
 
     [JsonIgnore]
-    public IEnumerable<ITraitData> StringTraits => m_StringTraits;
+    public IEnumerable<ITraitData> StringTraits => m_StringTraits.Concat(m_VirtualStringTraits);
 
     [JsonIgnore]
     public bool ShouldCount => true;
@@ -184,16 +188,24 @@ public class UnrealStringData : IStringData
 
     public void AddTraitInternal(ITraitData trait)
     {
-        m_StringTraits ??= new List<UnrealTraitData>();
-        m_StringTraits.Add((UnrealTraitData)trait);
+        if (trait is UnrealTraitData { IsVirtual: true } td)
+        {
+            m_VirtualStringTraits.Add(td);
+        }
+        else
+        {
+            m_StringTraits ??= new List<UnrealTraitData>();
+            m_StringTraits.Add((UnrealTraitData)trait);
+        }
     }
 
     public void RemoveTraitInternal(string trait)
     {
         m_StringTraits?.RemoveAll(t => t.Trait == trait);
+        m_VirtualStringTraits?.RemoveAll(t => t.Trait == trait);
     }
 
-    public ITraitData CreateTraitData(string trait) => new UnrealTraitData(trait);
+    public ITraitData CreateTraitData(string trait, bool isVirtual=false) => new UnrealTraitData(trait){IsVirtual=isVirtual};
 
     public bool UpdateText(Locale locale, string text, bool updateDate = true)
     {
@@ -240,6 +252,17 @@ public class UnrealStringData : IStringData
             localeData.TranslatedFrom = translatedFrom;
             localeData.OriginalText = originalText;
             localeData.TranslationDate = DateTime.UtcNow;
+        }
+    }
+
+    public void PostLoad(string absolutePath)
+    {
+        SourceFile = absolutePath;
+        // mark with virtual trait if it is conflicted
+        var nativeLocale = GetLocale(AppConfig.Instance.UnrealNativeLocale);
+        if (nativeLocale != null && nativeLocale.Text != m_SourceText)
+        {
+            AddTraitInternal(new UnrealTraitData("Source_Mismatch"){LocaleText = m_SourceText, IsVirtual = true});
         }
     }
 }

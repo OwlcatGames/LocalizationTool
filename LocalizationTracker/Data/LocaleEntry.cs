@@ -322,13 +322,24 @@ namespace LocalizationTracker.Data
         {
             if (string.IsNullOrEmpty(targetText))
                 return;
-            
-            m_InlinesCollection[InlineCollectionType.Glossary] = Glossary.Instance.MakeInlines(targetText, this);
-            Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.Glossary]);
+
+            try
+            {
+                m_InlinesCollection[InlineCollectionType.Glossary] = Glossary.Instance.MakeInlines(targetText, this);
+                Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.Glossary]);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         public void ApplyMaxSymbols()
         {
+            if (!AppConfig.Instance.HighlightMaxSymbols)
+            {
+                return;
+            }
             if (m_String.Data.Kind == StringKind.DialogAnswer)
             {
                 if (SymbolsCount > AppConfig.Instance.SymbolsBorders.ShortAnswer)
