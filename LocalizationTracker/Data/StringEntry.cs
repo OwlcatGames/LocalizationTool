@@ -17,6 +17,7 @@ using LocalizationTracker.Data.Wrappers;
 using System.ComponentModel;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Google.Apis.Sheets.v4.Data;
+using DocumentFormat.OpenXml.Drawing;
 
 namespace LocalizationTracker.Data
 {
@@ -116,6 +117,8 @@ namespace LocalizationTracker.Data
         public LocaleEntry TargetLocaleEntry { get; private set; }
 
         public string Speaker => Data.Speaker;
+        public ParentId ParentId => Data.ParentId;
+
 
         [NotNull]
         public IStringData Data;
@@ -185,7 +188,7 @@ namespace LocalizationTracker.Data
         public StringEntry(string absolutePath)
         {
             AbsolutePath = absolutePath;
-            m_Name = Path.GetFileName(absolutePath);
+            m_Name = System.IO.Path.GetFileName(absolutePath);
             //FileModificationTime = modificationTime;
         }
 
@@ -193,7 +196,7 @@ namespace LocalizationTracker.Data
         {
             Data = data;
             AbsolutePath = data is LocalizedStringData lsd ? lsd.AbsolutePath : data.StringPath; // todo: get rid of absolutepath maybe?
-            m_Name = Path.GetFileName(AbsolutePath);
+            m_Name = System.IO.Path.GetFileName(AbsolutePath);
 
             if (data is UnrealStringData usd)
             {

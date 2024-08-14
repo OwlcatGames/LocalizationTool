@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using LocalizationTracker.Data.Unreal;
 using LocalizationTracker.Data.Wrappers;
 using LocalizationTracker.Utility;
 using static LocalizationTracker.Data.Unreal.UnrealStringData;
@@ -217,8 +218,11 @@ namespace Kingmaker.Localization.Shared
 		[JsonIgnore]
 		public string AbsolutePath { get; set; }
 
-		
-		Locale IStringData.Source => Source;
+        [JsonIgnore]
+        public ParentId ParentId { get; set; }
+
+
+        Locale IStringData.Source => Source;
 
 		string IStringData.Key => Key;
 
@@ -228,7 +232,7 @@ namespace Kingmaker.Localization.Shared
 			set => Comment = value;
 		}
 
-		string IStringData.Speaker => Speaker;
+        string IStringData.Speaker => Speaker;
 
 		string IStringData.SpeakerGender => SpeakerGender;
 

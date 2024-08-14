@@ -5,6 +5,7 @@ using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 using LocalizationTracker.Excel;
 using LocalizationTracker.Logic.Excel;
+using LocalizationTracker.Logic.Excel.Exporters;
 using LocalizationTracker.Logic.Excel.Wrappers;
 using LocalizationTracker.OpenOffice;
 using LocalizationTracker.Utility;
@@ -26,7 +27,8 @@ namespace LocalizationTracker
             [ExportTarget.LocalizationToExcel] = new ExcelLocalizationExporter(),
             [ExportTarget.StringDiffToExcel] = new ExcelSourceUpdateExporter(),
             [ExportTarget.LocalozationToOpenOffice] = new OpenOfficeExporter(),
-            [ExportTarget.SpeakersStrings] = new SpeakersExport()
+            [ExportTarget.SpeakersStrings] = new SpeakersExport(),
+            [ExportTarget.SoundExport] = new SoundExporter()
         };
 
 
@@ -69,7 +71,7 @@ namespace LocalizationTracker
             if (_exporters.TryGetValue(param.ExportTarget, out var exporter))
             {
                 ExportData data = new ExportData() { ExportParams = param, Items = items };
-                data = exporter.PrepeareDataToExport(data);
+                data = exporter.PrepareDataToExport(data);
 
                 if (target != null)
                     data.ExportParams.Target = new List<Locale>() { target };
@@ -91,7 +93,7 @@ namespace LocalizationTracker
                 else
                 {
                     filePath = TryGetSavePath(selectedDirName, exporter.FileFilter, data.ExportParams, savedPath);
-                    
+
                     if (string.IsNullOrEmpty(savedPath))
                     {
                         savedPath = Path.GetDirectoryName(filePath);
@@ -193,7 +195,7 @@ namespace LocalizationTracker
 
     public interface IExporter
     {
-        public ExportData PrepeareDataToExport(ExportData data);
+        public ExportData PrepareDataToExport(ExportData data);
         ExportResults Export(ExportData data, Action<int, int> OnExportProgressEvent);
         string FileFilter { get; }
     }
@@ -203,8 +205,8 @@ namespace LocalizationTracker
         LocalizationToExcel,
         LocalozationToOpenOffice,
         StringDiffToExcel,
-        SpeakersStrings
-
+        SpeakersStrings,
+        SoundExport
     }
 
     public enum TagRemovalPolicy

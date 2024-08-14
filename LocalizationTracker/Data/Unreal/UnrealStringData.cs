@@ -41,6 +41,11 @@ public class UnrealStringData : IStringData
     [JsonPropertyName("comment")]
     public string m_Comment;
 
+    [JsonInclude]
+    [JsonPropertyName("parentTextId")]
+    public ParentId m_ParentId;
+
+
     public enum StringKind
     {
         Default,
@@ -108,6 +113,9 @@ public class UnrealStringData : IStringData
 
     [JsonIgnore]
     public string OwnerLink => m_OwnerPath;
+
+    [JsonIgnore]
+    public ParentId ParentId => m_ParentId;
 
     [JsonIgnore]
     public string StringPath
@@ -291,4 +299,14 @@ public class StringId
     public StringId()
     {
     }
+}
+
+public class ParentId
+{
+    [JsonInclude]
+    public string Namespace;
+
+    [JsonInclude]
+    public string Key;
+
 }

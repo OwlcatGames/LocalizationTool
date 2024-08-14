@@ -11,7 +11,7 @@ namespace LocalizationTracker.Excel
 {
 	public class ExcelSourceUpdateExporter : ExcelLocalizationExporter
 	{
-		public override ExportData PrepeareDataToExport(ExportData data)
+		public override ExportData PrepareDataToExport(ExportData data)
 		{
 			var prevSrcLocale = StringEntry.SourceLocale;
 			var prevTrgLocale = StringEntry.TargetLocale;

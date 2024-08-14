@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Kingmaker.Localization.Shared;
+using LocalizationTracker.Data.Unreal;
 using static LocalizationTracker.Data.Unreal.UnrealStringData;
 
 namespace LocalizationTracker.Data.Wrappers;
@@ -20,6 +21,8 @@ public interface IStringData
     public string Speaker { get; }
 
     public string SpeakerGender { get; }
+
+    public ParentId ParentId { get; }
 
     public string OwnerLink { get; }
     public string StringPath { get; }

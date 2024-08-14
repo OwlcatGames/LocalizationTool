@@ -105,6 +105,7 @@ namespace LocalizationTracker.Excel
         YellowSolid = 3,
         RedSolid = 4,
         GreenSolid = 5,
-        Context = 6
+        Context = 6,
+        GraySolid = 7
     }
 }

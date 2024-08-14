@@ -38,7 +38,7 @@ partial class StringsArchiveUnity : StringsArchive
 
     private IStringData LoadData(string absolutePath)
     {
-        if (absolutePath.Length >= 260)
+        if (absolutePath.Length >= 270)
         {
             throw new IOException($"The path is too long: {absolutePath}");
         }

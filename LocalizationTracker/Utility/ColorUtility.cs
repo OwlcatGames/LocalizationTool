@@ -52,6 +52,14 @@ namespace LocalizationTracker
             A = 255
         };
 
+        public static Color Gray => new Color
+        {
+            R = 220,
+            G = 220, 
+            B = 220, 
+            A = 255  
+        };
+
         public static DocumentFormat.OpenXml.Spreadsheet.Color MediaColorToOXMLColor(Color color)
             => new DocumentFormat.OpenXml.Spreadsheet.Color() { Rgb = MediaColorToHEX(color) };
 

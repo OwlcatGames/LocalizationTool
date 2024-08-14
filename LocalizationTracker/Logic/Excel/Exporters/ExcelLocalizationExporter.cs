@@ -18,7 +18,7 @@ namespace LocalizationTracker.Excel
         private uint m_RowIndex;
         public string FileFilter => "Excel document|*.xlsx";
 
-        public virtual ExportData PrepeareDataToExport(ExportData data)
+        public virtual ExportData PrepareDataToExport(ExportData data)
             => data;
 
         protected virtual ColumnSettings[] ColumnsSettings => new[]
@@ -60,7 +60,24 @@ namespace LocalizationTracker.Excel
                 if (data.ExportParams.ExtraContext && parents[row] is { } parent)
                     AddContextRows(data, doc, sheetData, parent);
 
-                AddRow(data, doc, sheetData, s, exportResult);
+                if (string.IsNullOrEmpty(s.AbsolutePath))
+                {
+                    var line = new Row();
+                    int numberOfColumns = 6;
+
+                    for (int i = 0; i < numberOfColumns; i++)
+                    {
+                        var emptyCell = new Cell().SetStyle(CellStyle.GraySolid); 
+                        line.Append(emptyCell); 
+                    }
+
+                    sheetData.Append(line); 
+                }
+                else
+                {
+                    AddRow(data, doc, sheetData, s, exportResult);
+                }
+
             }
 
             wrapper.Save();
@@ -89,6 +106,18 @@ namespace LocalizationTracker.Excel
                 row.AppendCell(new Cell().SetText($"Words (in Answers) in SourceLocale [{data.ExportParams.Source}]"));
                 row.AppendCell(new Cell().SetText($"Words (in Answers) in TargetLocale [{data.ExportParams.Target.FirstOrDefault()}]"));
             }
+            else if (data.ExportParams.ExportTarget == ExportTarget.SoundExport)
+            {
+                row.AppendCell(new Cell().SetText("Cue").SetStyle(CellStyle.GraySolid));
+                row.AppendCell(new Cell().SetText("Speaker").SetStyle(CellStyle.GraySolid));
+                row.AppendCell(new Cell().SetText($"Current [{data.ExportParams.Target.First()}]").SetStyle(CellStyle.GraySolid));
+                if (data.ExportParams.IncludeComment)
+                {
+                    row.AppendCell(new Cell().SetText("Comment").SetStyle(CellStyle.GraySolid));
+                }
+                row.AppendCell(new Cell().SetText("Direction").SetStyle(CellStyle.GraySolid));
+                row.AppendCell(new Cell().SetText($"Description").SetStyle(CellStyle.GraySolid));
+            }
             else
             {
                 row.AppendCell(new Cell().SetText("key"));
@@ -114,7 +143,13 @@ namespace LocalizationTracker.Excel
 
         private void AddRow(in ExportData data, SpreadsheetDocument doc, SheetData sheet, StringEntry s, ExportResults result)
         {
-            if (data.ExportParams.ExportTarget != ExportTarget.SpeakersStrings)
+            if (data.ExportParams.ExportTarget == ExportTarget.SoundExport)
+            {
+                var row = new Row();
+                sheet.AppendRow(row);
+                AddTextCells(data, doc, row, s, result);
+            }
+            else if (data.ExportParams.ExportTarget != ExportTarget.SpeakersStrings)
             {
                 var row = new Row();
                 sheet.AppendRow(row);
@@ -181,10 +216,10 @@ namespace LocalizationTracker.Excel
 
                 System.Windows.Media.Color color = new System.Windows.Media.Color
                 {
-                    R = 215, 
+                    R = 215,
                     G = 227,
-                    B = 188, 
-                    A = 255 
+                    B = 188,
+                    A = 255
                 };
 
                 var line = data.Items.Where(w => w.SourceLocaleEntry.Text == sourceText).First();
@@ -316,4 +351,6 @@ namespace LocalizationTracker.Excel
 
         }
     }
+
+
 }

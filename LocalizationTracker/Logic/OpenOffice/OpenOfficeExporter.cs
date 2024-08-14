@@ -13,7 +13,7 @@ namespace LocalizationTracker.OpenOffice
     {
         public string FileFilter => "OpenOffice spreadsheet|*.ods";
 
-        ExportData IExporter.PrepeareDataToExport(ExportData data)
+        ExportData IExporter.PrepareDataToExport(ExportData data)
             => data;
 
         /// <summary>

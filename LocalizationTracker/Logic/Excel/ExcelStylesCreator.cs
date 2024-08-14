@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace LocalizationTracker.Excel
@@ -70,6 +71,7 @@ namespace LocalizationTracker.Excel
             CreateYellowSolidStyle(stylesPart);
             CreateRedSolidStyle(stylesPart);
             CreateGreenSolidStyle(stylesPart);
+            CreateGraySolidStyle(stylesPart);
             CreateContextStyle(stylesPart);
         }
 
@@ -131,6 +133,19 @@ namespace LocalizationTracker.Excel
         {
             var solidGreen = new PatternFill() { PatternType = PatternValues.Solid };
             solidGreen.ForegroundColor = new ForegroundColor { Rgb = ColorUtility.MediaColorToHEX(ColorUtility.ExportDiffGreen) };
+            solidGreen.BackgroundColor = new BackgroundColor { Indexed = 64 };
+            stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = solidGreen });
+
+            var greenSolidFormat = new CellFormat { FormatId = 0, FontId = 0, BorderId = 0, FillId = 4, ApplyFill = true };
+            greenSolidFormat.AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Center, Vertical = VerticalAlignmentValues.Center });
+            stylesPart.Stylesheet.CellFormats.AppendChild(greenSolidFormat);
+        }
+
+        //CellStyle.GraySolid = 7
+        static void CreateGraySolidStyle(WorkbookStylesPart stylesPart)
+        {
+            var solidGreen = new PatternFill() { PatternType = PatternValues.Solid };
+            solidGreen.ForegroundColor = new ForegroundColor { Rgb = ColorUtility.MediaColorToHEX(ColorUtility.Gray) };
             solidGreen.BackgroundColor = new BackgroundColor { Indexed = 64 };
             stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = solidGreen });
 

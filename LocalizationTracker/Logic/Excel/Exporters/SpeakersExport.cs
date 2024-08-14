@@ -44,7 +44,7 @@ namespace LocalizationTracker.Excel
             }
         };
 
-        public override ExportData PrepeareDataToExport(ExportData data)
+        public override ExportData PrepareDataToExport(ExportData data)
         {
             List<SpeakerData> speakerDatas = new List<SpeakerData>();
             string directoryName;
