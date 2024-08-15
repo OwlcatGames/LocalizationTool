@@ -71,8 +71,8 @@ namespace LocalizationTracker.Excel
             CreateYellowSolidStyle(stylesPart);
             CreateRedSolidStyle(stylesPart);
             CreateGreenSolidStyle(stylesPart);
-            CreateGraySolidStyle(stylesPart);
             CreateContextStyle(stylesPart);
+            CreateGraySolidStyle(stylesPart);
         }
 
         //CellStyle.Base = 1
@@ -141,20 +141,7 @@ namespace LocalizationTracker.Excel
             stylesPart.Stylesheet.CellFormats.AppendChild(greenSolidFormat);
         }
 
-        //CellStyle.GraySolid = 7
-        static void CreateGraySolidStyle(WorkbookStylesPart stylesPart)
-        {
-            var solidGreen = new PatternFill() { PatternType = PatternValues.Solid };
-            solidGreen.ForegroundColor = new ForegroundColor { Rgb = ColorUtility.MediaColorToHEX(ColorUtility.Gray) };
-            solidGreen.BackgroundColor = new BackgroundColor { Indexed = 64 };
-            stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = solidGreen });
-
-            var greenSolidFormat = new CellFormat { FormatId = 0, FontId = 0, BorderId = 0, FillId = 4, ApplyFill = true };
-            greenSolidFormat.AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Center, Vertical = VerticalAlignmentValues.Center });
-            stylesPart.Stylesheet.CellFormats.AppendChild(greenSolidFormat);
-        }
-
-        //CellStyle.Context = 6
+               //CellStyle.Context = 6
         static void CreateContextStyle(WorkbookStylesPart stylesPart)
         {
             var solidYellow = new PatternFill() { PatternType = PatternValues.Solid };
@@ -166,6 +153,19 @@ namespace LocalizationTracker.Excel
             contextFormat.AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Center, Vertical = VerticalAlignmentValues.Center });
             
             stylesPart.Stylesheet.CellFormats.AppendChild(contextFormat);
+        }
+
+        //CellStyle.GraySolid = 7
+        static void CreateGraySolidStyle(WorkbookStylesPart stylesPart)
+        {
+            var solidGray = new PatternFill() { PatternType = PatternValues.Solid };
+            solidGray.ForegroundColor = new ForegroundColor { Rgb = ColorUtility.MediaColorToHEX(ColorUtility.Gray) };
+            solidGray.BackgroundColor = new BackgroundColor { Indexed = 64 };
+            stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = solidGray });
+
+            var graySolidFormat = new CellFormat { FormatId = 0, FontId = 0, BorderId = 0, FillId = 4, ApplyFill = true };
+            graySolidFormat.AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Center, Vertical = VerticalAlignmentValues.Center });
+            stylesPart.Stylesheet.CellFormats.AppendChild(graySolidFormat);
         }
     }
 }

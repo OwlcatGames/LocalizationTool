@@ -1,10 +1,12 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using LocalizationTracker.Data;
 using LocalizationTracker.Excel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static LocalizationTracker.Logic.StringManager;
 
 namespace LocalizationTracker.Logic.Excel.Exporters
 {
@@ -25,12 +27,18 @@ namespace LocalizationTracker.Logic.Excel.Exporters
 
         public override ExportData PrepareDataToExport(ExportData data)
         {
-
             if (data.Items.Where(w => w.Data.Kind == Data.Unreal.UnrealStringData.StringKind.DialogAnswer).Any())
             {
                 return PrepareDialogWithAnswersToExport(data);
             }
+            else
+            {
+                return PrepareDialogWithoutAnswersToExport(data);
+            }
+        }
 
+        private ExportData PrepareDialogWithoutAnswersToExport(ExportData data)
+        {
             List<StringEntry> OrderedDialog = new List<StringEntry>();
             StringEntry nextItem = null;
             var startDialog = data.Items.Where(w => string.IsNullOrEmpty(w.Data.ParentId.Key));
@@ -39,6 +47,12 @@ namespace LocalizationTracker.Logic.Excel.Exporters
             {
                 OrderedDialog.Add(startDialog.FirstOrDefault());
                 nextItem = data.Items.Where(w => w.ParentId.Key == startDialog.FirstOrDefault().Key.Replace(":", "")).FirstOrDefault();
+                while (nextItem != null)
+                {
+                    OrderedDialog.Add(nextItem);
+                    nextItem = data.Items.Where(w => w.ParentId.Key == nextItem.Key.Replace(":", "")).FirstOrDefault();
+                }
+
             }
             else if (startDialog.Count() > 1)
             {
@@ -62,6 +76,7 @@ namespace LocalizationTracker.Logic.Excel.Exporters
         private ExportData PrepareDialogWithAnswersToExport(ExportData data)
         {
             List<StringEntry> OrderedDialog = new List<StringEntry>();
+            StringEntry nextItem = null;
 
             var answersDictionary = data.Items
                 .Where(w => w.Data.Kind == Data.Unreal.UnrealStringData.StringKind.DialogAnswer)
@@ -71,41 +86,61 @@ namespace LocalizationTracker.Logic.Excel.Exporters
                     grp => grp.ToList()
                 );
 
-            var startDialog = data.Items.Where(w => string.IsNullOrEmpty(w.ParentId.Key)).FirstOrDefault();
-            OrderedDialog.Add(startDialog);
-            var nextItem = data.Items.Where(w => w.ParentId.Key == startDialog.Key.Replace(":", "")).FirstOrDefault();
+            var startDialog = data.Items.Where(w => w.ParentId != null && string.IsNullOrEmpty(w.ParentId.Key));
 
-            while (nextItem != null)
+            if (startDialog.Count() == 1)
             {
-                OrderedDialog.Add(nextItem);
-
-                if (answersDictionary.ContainsKey(nextItem.Key.Replace(":", "")))
+                OrderedDialog.Add(startDialog.FirstOrDefault());
+                nextItem = data.Items.Where(w => w.ParentId.Key == startDialog.FirstOrDefault().Key.Replace(":", "")).FirstOrDefault();
+            }
+            else if (startDialog.Count() > 1)
+            {
+                foreach (var line in startDialog)
                 {
-                    foreach (var answer in answersDictionary[nextItem.Key.Replace(":", "")])
+                    OrderedDialog.Add(line);
+                    nextItem = data.Items.Where(w => w.ParentId != null && w.ParentId.Key == line.Key.Replace(":", "")).FirstOrDefault();
+                    while (nextItem != null)
                     {
-                        OrderedDialog.Add(new StringEntry(string.Empty));
-
-                        var nextAnswer = data.Items.Where(w => w.ParentId != null && w.ParentId.Key.Replace(":", "") == answer.Key.Replace(":", "")).FirstOrDefault();
-                        
-                        while (nextAnswer != null)
+                        if (answersDictionary.ContainsKey(line.Key.Replace(":", "")) || answersDictionary.ContainsKey(nextItem.Key.Replace(":", "")))
                         {
-                            OrderedDialog.Add(nextAnswer);
-                            if (answersDictionary.ContainsKey(nextAnswer.Key.Replace(":", "")))
+                            string key = nextItem.Key.Replace(":", "");
+
+                            if (answersDictionary.ContainsKey(line.Key.Replace(":", "")))
+                                key = line.Key.Replace(":", "");
+
+                            foreach (var answer in answersDictionary[key])
                             {
-                                nextItem = nextAnswer;
+                                OrderedDialog.Add(new StringEntry(answer.AbsolutePath));
+
+                                var nextAnswer = data.Items.Where(w => w.ParentId != null && w.ParentId.Key.Replace(":", "") == answer.Key.Replace(":", "")).FirstOrDefault();
+
+                                while (nextAnswer != null)
+                                {
+                                    OrderedDialog.Add(nextAnswer);
+
+                                    if (answersDictionary.ContainsKey(nextAnswer.Key.Replace(":", "")))
+                                    {
+                                        nextItem = nextAnswer;
+                                    }
+
+                                    nextAnswer = data.Items.Where(w => w.ParentId != null && w.ParentId.Key.Replace(":", "") == nextAnswer.Key.Replace(":", "")).FirstOrDefault();
+                                }
+
+                                nextItem = null;
                             }
-                            nextAnswer = data.Items.Where(w => w.ParentId != null && w.ParentId.Key.Replace(":", "") == nextAnswer.Key.Replace(":", "")).FirstOrDefault();
+
+                            OrderedDialog.Add(new StringEntry(string.Empty));
+                        }
+                        else
+                        {
+                            nextItem = data.Items.Where(w => w.ParentId != null && w.ParentId.Key.Replace(":", "") == nextItem.Key.Replace(":", "")).FirstOrDefault();
                         }
 
-                        OrderedDialog.Add(new StringEntry(string.Empty));
+                        OrderedDialog.Add(nextItem);
                     }
                 }
-
-                nextItem = data.Items.Where(w => w.ParentId != null && w.ParentId.Key.Replace(":", "") == nextItem.Key.Replace(":", "")).FirstOrDefault();
             }
-
             return new SoundExportData(data, OrderedDialog);
-
         }
 
         private void AddRow(in ExportData data, SpreadsheetDocument doc, SheetData sheet, StringEntry s, ExportResults result)

@@ -1,6 +1,8 @@
 ﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Office2013.ExcelAc;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Vml.Office;
 using LocalizationTracker.Data;
 using LocalizationTracker.Utility;
 using System;
@@ -42,13 +44,41 @@ namespace LocalizationTracker.Excel
             using var wrapper = new WorkbookWrapper(path, WrapperMod.ExportNewFile, ColumnsSettings);
             var doc = wrapper.Document;
             var sharedStrings = doc.GetSharedTable().SharedStringTable;
-            var workSheet = doc.WorkbookPart.WorksheetParts.Single().Worksheet;
-            var sheetData = doc.GetSheet(0);
+
+            var sheets = doc.WorkbookPart.Workbook.GetFirstChild<Sheets>();
+
+            SheetData sheetData = null;
+            Worksheet worksheet = null;
+
+            if (strings.Length > 0)
+            {
+                var worksheetPart = doc.WorkbookPart.AddNewPart<WorksheetPart>();
+                sheetData = new SheetData();
+                worksheet = new Worksheet(sheetData);
+                worksheetPart.Worksheet = worksheet;
+
+                var firstSheetName = GetFolderName(data.Items.First().AbsolutePath);
+
+                uint sheetId = (uint)(sheets.Elements<Sheet>().Count() + 1);
+                var firstSheet = new Sheet
+                {
+                    Id = doc.WorkbookPart.GetIdOfPart(worksheetPart),
+                    SheetId = sheetId,
+                    Name = firstSheetName
+                };
+
+                sheets.Append(firstSheet);
+            }
 
             OnExportProgressEvent(0, strings.Length + 1);
             var parents = data.ExportParams.ExtraContext ? strings.AsParallel().Select(UnityAssets.FindParent).ToArray() : Array.Empty<StringEntry>();
 
-            AddHeader(data, sheetData);
+            if (sheetData != null)
+            {
+                AddHeader(data, sheetData);
+            }
+
+            string lastAddress = null;
 
             for (int row = 0; row < strings.Length; row++)
             {
@@ -60,31 +90,79 @@ namespace LocalizationTracker.Excel
                 if (data.ExportParams.ExtraContext && parents[row] is { } parent)
                     AddContextRows(data, doc, sheetData, parent);
 
-                if (string.IsNullOrEmpty(s.AbsolutePath))
+                if (data.ExportParams.ExportTarget == ExportTarget.SoundExport)
                 {
-                    var line = new Row();
-                    int numberOfColumns = 6;
-
-                    for (int i = 0; i < numberOfColumns; i++)
+                    if (s == null || s.Data == null)
                     {
-                        var emptyCell = new Cell().SetStyle(CellStyle.GraySolid); 
-                        line.Append(emptyCell); 
-                    }
+                        var line = new Row();
+                        int numberOfColumns = 6;
+                        Cell emptyCell = new Cell();
 
-                    sheetData.Append(line); 
+                        if (s != null)
+                        {
+                            emptyCell = new Cell().SetText(System.IO.Path.GetFileName(s.AbsolutePath)).SetStyle(CellStyle.GraySolid);
+                        }
+                        else
+                        {
+                            emptyCell = new Cell().SetStyle(CellStyle.GraySolid);
+                        }
+                        line.Append(emptyCell);
+                        sheetData.Append(line);
+
+                    }
+                    else
+                    {
+                        if (lastAddress != null && !s.AbsolutePath.Contains(lastAddress))
+                        {
+                            var newWorksheetPart = doc.WorkbookPart.AddNewPart<WorksheetPart>();
+                            var newSheetData = new SheetData();
+                            var newWorksheet = new Worksheet(newSheetData);
+                            newWorksheetPart.Worksheet = newWorksheet;
+
+                            string sheetName = GetFolderName(s.AbsolutePath);
+
+                            var newSheet = new Sheet
+                            {
+                                Id = doc.WorkbookPart.GetIdOfPart(newWorksheetPart),
+                                SheetId = (uint)(sheets.Elements<Sheet>().Count() + 1),
+                                Name = sheetName
+                            };
+
+                            sheets.Append(newSheet);
+                            sheetData = newSheetData;
+                            AddHeader(data, sheetData);
+
+                        }
+
+                        AddRow(data, doc, sheetData, s, exportResult);
+
+                        lastAddress = GetFolderName(s.AbsolutePath);
+                    }
                 }
                 else
                 {
                     AddRow(data, doc, sheetData, s, exportResult);
                 }
-
             }
 
             wrapper.Save();
+            sheets.First().Remove();
             return exportResult;
         }
 
         protected virtual bool CheckStringIsValidForExport(StringEntry e) => true;
+
+        private string GetFolderName(string absolutePath)
+        {
+            var address = absolutePath.Split("/");
+
+            if (address.Count() > 1)
+            {
+                return address[address.Count() - 2];
+            }
+
+            return "unknown";
+        }
 
         private void AddHeader(in ExportData data, SheetData sheet)
         {
