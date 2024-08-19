@@ -129,13 +129,11 @@ namespace LocalizationTracker.Excel
 
         public static SheetData CreateNewSheet(SpreadsheetDocument doc, Sheets sheets, StringEntry s, ColumnSettings[]? columnDatas)
         {
+
             var worksheetPart = doc.WorkbookPart.AddNewPart<WorksheetPart>();
             var sheetData = new SheetData();
             var worksheet = new Worksheet(sheetData);
             worksheetPart.Worksheet = worksheet;
-
-            if (columnDatas != null)
-                ExcelStylesCreator.AddCustomColumn(worksheetPart, columnDatas);
 
             uint sheetId = (uint)(sheets.Elements<Sheet>().Count() + 1);
             var firstSheet = new Sheet
