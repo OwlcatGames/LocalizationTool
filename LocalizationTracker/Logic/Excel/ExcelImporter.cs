@@ -1,12 +1,18 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
+﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Spreadsheet;
 using JetBrains.Annotations;
 using Kingmaker.Localization.Shared;
+using LocalizationTracker.Components;
 using LocalizationTracker.Data;
+using LocalizationTracker.Data.Unreal;
 using LocalizationTracker.Logic;
+using LocalizationTracker.Utility;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using static LocalizationTracker.Data.Unreal.UnrealStringData;
 
 namespace LocalizationTracker.Excel
 {
@@ -150,6 +156,8 @@ namespace LocalizationTracker.Excel
                     result.Path = se.AbsolutePath;
                     result.CurrentSource = se.Data.GetText(m_SourceLocale);
                     result.CurrentTarget = se.Data.GetText(m_TargetLocale);
+
+                    MaxSymbols(m_TargetLocale, result.ImportResult, se.Data.Kind);
                 }
             }
 
@@ -226,6 +234,8 @@ namespace LocalizationTracker.Excel
                 result.AddMessage("Source text was changed");
             }
 
+            result = CheckSymbolsCount(se, result);
+
             se.Data.UpdateTranslation(m_TargetLocale, result.ImportResult, m_SourceLocale, result.ImportSource);
             foreach (var trait in m_Traits)
             {
@@ -233,6 +243,45 @@ namespace LocalizationTracker.Excel
             }
 
             se.Save();
+
+            return result;
+        }
+
+        private ImportEntry CheckSymbolsCount(StringEntry se, ImportEntry result)
+        {
+            int symbolsCount = result.ImportResult.Length;
+
+            if (result.ImportResult.Contains("|"))
+            {
+                symbolsCount = StringUtils.CountTotalSymbols(result.ImportResult);
+            }
+
+            if (se.Data.Kind == StringKind.DialogAnswer)
+            {
+                if (symbolsCount > AppConfig.Instance.SymbolsBorders.ShortAnswer)
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage($"Character limit exceeded: {symbolsCount}/{AppConfig.Instance.SymbolsBorders.ShortAnswer}");
+                }
+
+            }
+            else if (se.Data.Kind == StringKind.DialogCue)
+            {
+                if (m_TargetLocale == "en")
+                {
+                    if (symbolsCount > AppConfig.Instance.SymbolsBorders.En)
+                    {
+                        result.Status = ImportStatus.Warning;
+                        result.AddMessage($"Character limit exceeded: {symbolsCount}/{AppConfig.Instance.SymbolsBorders.En}");
+
+                    }
+                }
+                else if (symbolsCount > AppConfig.Instance.SymbolsBorders.Common)
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage($"Character limit exceeded: {symbolsCount}/{AppConfig.Instance.SymbolsBorders.Common}");
+                }
+            }
 
             return result;
         }
@@ -270,6 +319,12 @@ namespace LocalizationTracker.Excel
             }
 
             throw new IOException($"Could not find shared string value {cell.InnerText} in excel document for cell {cell.CellReference}");
+        }
+
+        public void MaxSymbols(Locale locale, string resultText, StringKind stringKind)
+        {
+
+
         }
     }
 }

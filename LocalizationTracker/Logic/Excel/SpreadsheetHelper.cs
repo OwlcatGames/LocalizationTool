@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using LocalizationTracker.Data;
 using LocalizationTracker.Utility;
 using System.IO;
 using System.Linq;
@@ -96,7 +97,7 @@ namespace LocalizationTracker.Excel
             WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
             worksheetPart.Worksheet = new Worksheet();
             if (columnDatas != null)
-                ExcelStylesCreator.AddCustomeColumn(worksheetPart, columnDatas);
+                ExcelStylesCreator.AddCustomColumn(worksheetPart, columnDatas);
             worksheetPart.Worksheet.Append(new SheetData());
             worksheetPart.Worksheet.Save();
 
@@ -124,6 +125,41 @@ namespace LocalizationTracker.Excel
             workbookPart.Workbook.Save();
             spreadsheetDocument.Save();
             spreadsheetDocument.Close();
+        }
+
+        public static SheetData CreateNewSheet(SpreadsheetDocument doc, Sheets sheets, StringEntry s, ColumnSettings[]? columnDatas)
+        {
+            var worksheetPart = doc.WorkbookPart.AddNewPart<WorksheetPart>();
+            var sheetData = new SheetData();
+            var worksheet = new Worksheet(sheetData);
+            worksheetPart.Worksheet = worksheet;
+
+            if (columnDatas != null)
+                ExcelStylesCreator.AddCustomColumn(worksheetPart, columnDatas);
+
+            uint sheetId = (uint)(sheets.Elements<Sheet>().Count() + 1);
+            var firstSheet = new Sheet
+            {
+                Id = doc.WorkbookPart.GetIdOfPart(worksheetPart),
+                SheetId = sheetId,
+                Name = GetFolderName(s.AbsolutePath)
+            };
+
+            sheets.Append(firstSheet);
+
+            return sheetData;
+        }
+
+        public static string GetFolderName(string absolutePath)
+        {
+            var address = absolutePath.Split("/");
+
+            if (address.Count() > 1)
+            {
+                return address[address.Count() - 2];
+            }
+
+            return "unknown";
         }
 
         public static Row GetRow(this SheetData sheet, int rowIdx)

@@ -13,7 +13,7 @@ namespace LocalizationTracker.Excel
 
     public static class ExcelStylesCreator
     {
-        public static void AddCustomeColumn(WorksheetPart wsPart, ColumnSettings[] datas)
+        public static void AddCustomColumn(WorksheetPart wsPart, ColumnSettings[] datas)
         {
             Columns columns = new Columns();
             foreach (var data in datas)
@@ -163,7 +163,7 @@ namespace LocalizationTracker.Excel
             solidGray.BackgroundColor = new BackgroundColor { Indexed = 64 };
             stylesPart.Stylesheet.Fills.AppendChild(new Fill { PatternFill = solidGray });
 
-            var graySolidFormat = new CellFormat { FormatId = 0, FontId = 0, BorderId = 0, FillId = 4, ApplyFill = true };
+            var graySolidFormat = new CellFormat { FormatId = 0, FontId = 0, BorderId = 0, FillId = 6, ApplyFill = true };
             graySolidFormat.AppendChild(new Alignment { Horizontal = HorizontalAlignmentValues.Center, Vertical = VerticalAlignmentValues.Center });
             stylesPart.Stylesheet.CellFormats.AppendChild(graySolidFormat);
         }

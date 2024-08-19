@@ -15,13 +15,13 @@ namespace LocalizationTracker.Logic.Excel.Exporters
         private uint m_RowIndex;
         public string FileFilter => "Excel document|*.xlsx";
 
-        protected virtual ColumnSettings[] ColumnsSettings => new[]
+        protected override ColumnSettings[] ColumnsSettings => new[]
         {
             new ColumnSettings()
             {
-                MinIndex = 4,
+                MinIndex = 3,
                 MaxIndex = 6,
-                Width = 150
+                Width = 70
             }
         };
 

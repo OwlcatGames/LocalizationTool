@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Automation;
+using static Microsoft.FSharp.Core.ByRefKinds;
 
 namespace LocalizationTracker.Utility
 {
@@ -44,8 +46,8 @@ namespace LocalizationTracker.Utility
         {
             var matches = SplitWordsTags().Matches(str);
 
-            var words = matches.Where(v => 
-                !v.Groups["Tag"].Captures.Any() || 
+            var words = matches.Where(v =>
+                !v.Groups["Tag"].Captures.Any() ||
                 v.Groups["TagName"].Captures.All(tagName => tagsToRetain.Contains(tagName.Value))).Select(v => v.Value);
             return string.Join("", words);
         }
@@ -63,8 +65,45 @@ namespace LocalizationTracker.Utility
         {
             var matches = SplitWordsTags().Matches(str);
 
+            var test = matches.SelectMany(v => v.Groups["Word"].Captures);
+
             var words = matches.SelectMany(v => v.Groups["Word"].Captures).Count();
             return words;
+        }
+
+        public static int CountTotalSymbols(string str)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            var tagsToRemove = new List<string>();
+            var matches = SplitWordsTags().Matches(str);
+            var words = matches.Where(v =>
+                    !v.Groups["Tag"].Captures.Any() ||
+                    v.Groups["TagName"].Captures.All(tagName => !tagsToRemove.Contains(tagName.Value))).Select(v => v.Value);
+
+            foreach (var word in words)
+            {
+                string longestWord = "";
+                string pattern = @"(?<=\{(?:[^{}|]*\|)*)([^{}|]+)";
+                MatchCollection match = Regex.Matches(word, pattern);
+
+                if (match.Count() != 0)
+                {
+                    for (var i = 1; i < match.Count(); i++)
+                    {
+                        if (match[i].Length > longestWord.Length)
+                            longestWord = match[i].ToString();
+                    }
+
+                    stringBuilder.Append(longestWord);
+                }
+                else
+                {
+                    stringBuilder.Append(word);
+                }
+
+            }
+
+            return stringBuilder.ToString().Length;
         }
 
 
@@ -122,7 +161,7 @@ namespace LocalizationTracker.Utility
 
         public static bool MatchesPattern(string text, string pattern, bool ignoreCase)
             => Regex.Match(text, pattern, ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None).Success;
-        
+
         public static bool TryGetSubstring(this string input, int startIndex, int length, out string result)
         {
             result = string.Empty;

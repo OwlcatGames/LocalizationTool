@@ -104,7 +104,17 @@ namespace LocalizationTracker.Data
         private int _symbolsCount;
         public int SymbolsCount
         {
-            get { return Text.Length; }
+            get
+            {
+                int textForCount = TextWithoutTags(Array.Empty<string>()).Length;
+
+                if (Text.Contains("|") && !Text.Contains("{Speaker}"))
+                {
+                    textForCount = StringUtils.CountTotalSymbols(TextWithoutTags(Array.Empty<string>()));
+                }
+
+                return textForCount;
+            }
             set
             {
                 if (_symbolsCount != value)
@@ -353,8 +363,8 @@ namespace LocalizationTracker.Data
                 else
                 {
                     Color = Brushes.LightSlateGray;
-                    if(!m_String.Data.GetLocale(Locale).Traits.Contains(extraSymbols))
-                            m_String.Data.GetLocale(Locale).RemoveTraitInternal("ExtraSymbols");
+                    if (!m_String.Data.GetLocale(Locale).Traits.Contains(extraSymbols))
+                        m_String.Data.GetLocale(Locale).RemoveTraitInternal("ExtraSymbols");
                 }
 
                 SymbolsBordersAndCount = $"{SymbolsCount}/{AppConfig.Instance.SymbolsBorders.ShortAnswer}";
