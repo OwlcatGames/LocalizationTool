@@ -35,8 +35,6 @@ namespace LocalizationTracker.Excel
 
         public ExportResults Export(ExportData data, Action<int, int> OnExportProgressEvent)
         {
-            SheetData sheetData = null;
-
             UnityAssets.ClearFoldersCache();
             var path = data.DistFolder;
             var strings = data.Items;
@@ -46,23 +44,13 @@ namespace LocalizationTracker.Excel
             using var wrapper = new WorkbookWrapper(path, WrapperMod.ExportNewFile, ColumnsSettings);
             var doc = wrapper.Document;
             var sharedStrings = doc.GetSharedTable().SharedStringTable;
-
-            var sheets = doc.WorkbookPart.Workbook.GetFirstChild<Sheets>();
-
-            if (strings.Length > 0)
-            {
-                sheetData = SpreadsheetHelper.CreateNewSheet(doc, sheets, data.Items.FirstOrDefault(), ColumnsSettings);
-            }
+            var workSheet = doc.WorkbookPart.WorksheetParts.Single().Worksheet;
+            var sheetData = doc.GetSheet(0);
 
             OnExportProgressEvent(0, strings.Length + 1);
             var parents = data.ExportParams.ExtraContext ? strings.AsParallel().Select(UnityAssets.FindParent).ToArray() : Array.Empty<StringEntry>();
 
-            if (sheetData != null)
-            {
-                AddHeader(data, sheetData);
-            }
-
-            string lastAddress = null;
+            AddHeader(data, sheetData);
 
             for (int row = 0; row < strings.Length; row++)
             {
@@ -74,49 +62,10 @@ namespace LocalizationTracker.Excel
                 if (data.ExportParams.ExtraContext && parents[row] is { } parent)
                     AddContextRows(data, doc, sheetData, parent);
 
-                if (data.ExportParams.ExportTarget == ExportTarget.SoundExport)
-                {
-                    if (s == null || s.Data == null)
-                    {
-                        var line = new Row();
-                        int numberOfColumns = 6;
-                        Cell emptyCell = new Cell();
-
-                        if (s != null)
-                        {
-                            emptyCell = new Cell().SetText(System.IO.Path.GetFileName(s.AbsolutePath)).SetStyle(CellStyle.GraySolid);
-                        }
-                        else
-                        {
-                            emptyCell = new Cell().SetStyle(CellStyle.GraySolid);
-                        }
-                        line.Append(emptyCell);
-                        sheetData.Append(line);
-
-                    }
-                    else
-                    {
-                        var actualFolder = SpreadsheetHelper.GetFolderName(s.AbsolutePath);
-                        if (lastAddress != null && actualFolder != lastAddress)
-                        {
-                            var newSheetData = SpreadsheetHelper.CreateNewSheet(doc, sheets, s, ColumnsSettings); ;
-                            sheetData = newSheetData;
-                            AddHeader(data, sheetData);
-                        }
-
-                        AddRow(data, doc, sheetData, s, exportResult);
-
-                        lastAddress = SpreadsheetHelper.GetFolderName(s.AbsolutePath);
-                    }
-                }
-                else
-                {
-                    AddRow(data, doc, sheetData, s, exportResult);
-                }
+                AddRow(data, doc, sheetData, s, exportResult);
             }
 
             wrapper.Save();
-            sheets.First().Remove();
             return exportResult;
         }
 
@@ -141,18 +90,6 @@ namespace LocalizationTracker.Excel
                 row.AppendCell(new Cell().SetText("Answers"));
                 row.AppendCell(new Cell().SetText($"Words (in Answers) in SourceLocale [{data.ExportParams.Source}]"));
                 row.AppendCell(new Cell().SetText($"Words (in Answers) in TargetLocale [{data.ExportParams.Target.FirstOrDefault()}]"));
-            }
-            else if (data.ExportParams.ExportTarget == ExportTarget.SoundExport)
-            {
-                row.AppendCell(new Cell().SetText("Cue").SetStyle(CellStyle.GraySolid));
-                row.AppendCell(new Cell().SetText("Speaker").SetStyle(CellStyle.GraySolid));
-                row.AppendCell(new Cell().SetText($"Current [{data.ExportParams.Target.First()}]").SetStyle(CellStyle.GraySolid));
-                if (data.ExportParams.IncludeComment)
-                {
-                    row.AppendCell(new Cell().SetText("Comment").SetStyle(CellStyle.GraySolid));
-                }
-                row.AppendCell(new Cell().SetText("Direction").SetStyle(CellStyle.GraySolid));
-                row.AppendCell(new Cell().SetText($"Description").SetStyle(CellStyle.GraySolid));
             }
             else
             {
@@ -179,13 +116,7 @@ namespace LocalizationTracker.Excel
 
         private void AddRow(in ExportData data, SpreadsheetDocument doc, SheetData sheet, StringEntry s, ExportResults result)
         {
-            if (data.ExportParams.ExportTarget == ExportTarget.SoundExport)
-            {
-                var row = new Row();
-                sheet.AppendRow(row);
-                AddTextCells(data, doc, row, s, result);
-            }
-            else if (data.ExportParams.ExportTarget != ExportTarget.SpeakersStrings)
+            if (data.ExportParams.ExportTarget != ExportTarget.SpeakersStrings)
             {
                 var row = new Row();
                 sheet.AppendRow(row);

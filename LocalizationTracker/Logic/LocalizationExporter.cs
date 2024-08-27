@@ -5,7 +5,6 @@ using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 using LocalizationTracker.Excel;
 using LocalizationTracker.Logic.Excel;
-using LocalizationTracker.Logic.Excel.Exporters;
 using LocalizationTracker.Logic.Excel.Wrappers;
 using LocalizationTracker.OpenOffice;
 using LocalizationTracker.Utility;
@@ -27,8 +26,7 @@ namespace LocalizationTracker
             [ExportTarget.LocalizationToExcel] = new ExcelLocalizationExporter(),
             [ExportTarget.StringDiffToExcel] = new ExcelSourceUpdateExporter(),
             [ExportTarget.LocalozationToOpenOffice] = new OpenOfficeExporter(),
-            [ExportTarget.SpeakersStrings] = new SpeakersExport(),
-            [ExportTarget.SoundExport] = new SoundExporter()
+            [ExportTarget.SpeakersStrings] = new SpeakersExport()
         };
 
 
@@ -205,8 +203,7 @@ namespace LocalizationTracker
         LocalizationToExcel,
         LocalozationToOpenOffice,
         StringDiffToExcel,
-        SpeakersStrings,
-        SoundExport
+        SpeakersStrings
     }
 
     public enum TagRemovalPolicy
