@@ -20,7 +20,7 @@ namespace LocalizationTracker
 
 
         public static async Task StartListeningAsync(int port = 55555)
-        {
+       {
             string[] args = new[] { $"http://+:{port}/" };
 
             if (args == null || args.Length == 0)
@@ -49,7 +49,7 @@ namespace LocalizationTracker
                         Status(response);
                     }
 
-                    if (context.Request.HttpMethod == "GET" && context.Request.Url.LocalPath == "/owlcat://open")
+                    if (context.Request.HttpMethod == "GET" && context.Request.Url.LocalPath == "/owlcat://open/")
                     {
                         string path = context.Request.QueryString["path"];
                         if (!string.IsNullOrEmpty(path))
@@ -58,6 +58,8 @@ namespace LocalizationTracker
                             Console.WriteLine($"Path: {path}");
 
                             await OpenString(response, path);
+                            response.OutputStream.Close();
+
                         }
                         else
                         {
@@ -126,7 +128,6 @@ namespace LocalizationTracker
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(result);
             resp.ContentLength64 = buffer.Length;
             await resp.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            resp.OutputStream.Close();
         }
 
 
