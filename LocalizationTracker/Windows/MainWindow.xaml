@@ -224,7 +224,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <TextBox Text="{Binding Path=Filter.Name, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"/>
+                        <TextBox Text="{Binding Path=Filter.Name, UpdateSourceTrigger=PropertyChanged}" Foreground="{Binding Path=Filter.ForegroundColor, UpdateSourceTrigger=PropertyChanged}" Grid.Column="0"/>
                         <Button Content="..." HorizontalAlignment="Left"  VerticalAlignment="Top" DockPanel.Dock="Right" Grid.Column="1" Click="MultilineSearchText_Click" />
                     </Grid>
                     <Label Content="Text:" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Right" />
@@ -316,7 +316,7 @@
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-            <DataGrid x:Name="Strings" Height="Auto" Width="Auto" Grid.Row="2"  CanUserSortColumns="True" ContextMenuOpening="Strings_OnContextMenuOpening" SelectionChanged="Strings_OnSelectionChanged" KeyDown="Strings_OnKeyDown" VirtualizingPanel.ScrollUnit="Pixel" CanUserDeleteRows="False" CanUserAddRows="False" ItemsSource="{Binding StringsSource}" Margin="0,0,0,27">
+            <DataGrid x:Name="Strings" Height="Auto" Width="Auto" Grid.Row="2"  CanUserSortColumns="True" ContextMenuOpening="Strings_OnContextMenuOpening" SelectionChanged="Strings_OnSelectionChanged" KeyDown="Strings_OnKeyDown" ScrollViewer.CanContentScroll="True" CanUserDeleteRows="False" CanUserAddRows="False" ItemsSource="{Binding StringsSource}" Margin="0,0,0,27">
                 <DataGrid.ContextMenu>
                     <ContextMenu ItemsSource="{Binding GridContextMenu}"/>
                 </DataGrid.ContextMenu>

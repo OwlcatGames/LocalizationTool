@@ -956,6 +956,11 @@ namespace LocalizationTracker.Windows
 
             StringManager.SetFilteredStrings(filtered);
 
+            if (!string.IsNullOrEmpty(Filter.NameMultiline))
+                Filter.CheckMultilineSearch(filtered);
+            else
+                Filter.NotFound = "";
+
             UpdateStringsCount(filtered, null, 0, filtered.Length, FoldersSource);
             UpdateStringsView();
 

@@ -23,13 +23,14 @@ using LocalizationTracker.Tools.GlossaryTools;
 using LocalizationTracker.Utility;
 using LocalizationTracker.Components;
 using System.Windows.Threading;
+using DocumentFormat.OpenXml.ExtendedProperties;
 
 namespace LocalizationTracker.Windows
 {
     public class StringsFilter : DependencyObject, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
-    
+
         private void NotifyPropertyChanged(string info)
         {
             if (PropertyChanged != null)
@@ -87,10 +88,25 @@ namespace LocalizationTracker.Windows
             }
         }
 
+        private Brush _foregroundColor = Brushes.Black;
+        public Brush ForegroundColor
+        {
+            get => _foregroundColor;
+            set
+            {
+                if (_foregroundColor != value)
+                {
+                    _foregroundColor = value;
+                    NotifyPropertyChanged(nameof(ForegroundColor));
+                }
+            }
+        }
+
         public void ForceUpdateFilter()
         {
             Updated?.Invoke();
         }
+
         public string NameMultiline
         {
             get => m_Name;
@@ -101,6 +117,22 @@ namespace LocalizationTracker.Windows
                 //Updated?.Invoke();
                 NotifyPropertyChanged(nameof(Name));
                 NotifyPropertyChanged(nameof(NameMultiline));
+                
+            }
+        }
+
+        private string _notFound = "";
+
+        public string NotFound
+        {
+            get => _notFound;  // Возвращаем поле, а не само свойство
+            set
+            {
+                if (_notFound != value)
+                {
+                    _notFound = value;  // Изменяем поле
+                    NotifyPropertyChanged(nameof(NotFound));  // Уведомляем о изменении
+                }
             }
         }
 
@@ -246,7 +278,7 @@ namespace LocalizationTracker.Windows
                 return false;
 
             if (!string.IsNullOrEmpty(Comment) &&
-                !StringUtils.MatchesFilter(stringEntry.Data.Comment, Comment, m_IgnoreCase) && 
+                !StringUtils.MatchesFilter(stringEntry.Data.Comment, Comment, m_IgnoreCase) &&
                 !StringUtils.MatchesFilter(stringEntry.SourceLocaleEntry.TranslatorComment, Comment, m_IgnoreCase) &&
                 !StringUtils.MatchesFilter(stringEntry.TargetLocaleEntry.TranslatorComment, Comment, m_IgnoreCase))
                 return false;
@@ -447,6 +479,42 @@ namespace LocalizationTracker.Windows
         public void SearchButton_Click(object sender, RoutedEventArgs e)
         {
             Updated?.Invoke();
+        }
+
+        public void CheckMultilineSearch(StringEntry[]? stringEntries)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+
+            foreach (var line in NameMultiline.Split("\r\n"))
+            {
+                if (IgnoreCase == true)
+                {
+                    if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim().ToLower()).Any(s => s.Contains(line.Trim().ToLower())))
+                    {
+                        stringBuilder.AppendLine(line);
+                    }
+                }
+                else
+                {
+                    if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim()).Any(s => s.Contains(line.Trim())))
+                    {
+                        stringBuilder.AppendLine(line);
+                    }
+                }
+
+            }
+
+            if (stringBuilder.Length != 0)
+            {
+                NotFound = $"Not found:\r\n{stringBuilder.ToString()}";
+                ForegroundColor = Brushes.Red;
+            }
+            else
+            {
+                NotFound = "";
+                ForegroundColor = Brushes.Black;
+            }
+
         }
     }
 

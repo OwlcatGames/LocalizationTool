@@ -111,6 +111,7 @@ namespace LocalizationTracker.ViewModel
                 .ToArray();
 
             StringTraits = stringData.StringTraits?
+                .OrderBy(or => or.ModificationDate)
                 .Select(td => new TraitDetailsVM(td))
                 .ToArray() ?? new TraitDetailsVM[0];
         }

@@ -56,6 +56,7 @@ namespace LocalizationTracker.Components
         private void ButtonShowPopup_Click(object sender, RoutedEventArgs e)
         {
             PopupTraits.IsOpen = !PopupTraits.IsOpen;
+            UpdateTraitsList();
         }
 
         private static void LocalePropertyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)

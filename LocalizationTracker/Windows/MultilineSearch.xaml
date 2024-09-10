@@ -7,5 +7,8 @@
         d:DataContext="{d:DesignInstance Type=locTrackerWindows:MultilineSearch}"
         mc:Ignorable="d"
         Title="MultilineSearch" Height="450" Width="800" Closed="Window_Closed">
-    <TextBox Name="MultilineSearchText" Text="{Binding Path=Filter.NameMultiline, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"/>
+    <StackPanel>
+        <TextBox Name="MultilineSearchText" Text="{Binding Path=Filter.NameMultiline, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"/>
+        <TextBlock Foreground="Red" Text="{Binding Path=Filter.NotFound, UpdateSourceTrigger=PropertyChanged}"/>
+    </StackPanel>
 </Window>

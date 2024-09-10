@@ -78,6 +78,7 @@ namespace LocalizationTracker.ViewModel
 			}
 
 			Traits = localeData.Traits?
+				.OrderBy(or => or.ModificationDate)
 				.Select(td => new TraitDetailsVM(td))
 				.ToList() ?? new List<TraitDetailsVM>();
 		}
