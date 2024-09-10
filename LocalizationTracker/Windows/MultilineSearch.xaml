@@ -7,8 +7,11 @@
         d:DataContext="{d:DesignInstance Type=locTrackerWindows:MultilineSearch}"
         mc:Ignorable="d"
         Title="MultilineSearch" Height="450" Width="800" Closed="Window_Closed">
-    <StackPanel>
-        <TextBox Name="MultilineSearchText" Text="{Binding Path=Filter.NameMultiline, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"/>
-        <TextBlock Foreground="Red" Text="{Binding Path=Filter.NotFound, UpdateSourceTrigger=PropertyChanged}"/>
-    </StackPanel>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="auto">
+        <StackPanel>
+            <TextBox Name="MultilineSearchText" Text="{Binding Path=Filter.NameMultiline, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True"/>
+            <TextBox Foreground="Red" Text="{Binding Path=Filter.NotFound, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"/>
+        </StackPanel>
+    </ScrollViewer>
 </Window>
