@@ -224,14 +224,40 @@ namespace LocalizationTracker.Excel
 
             if (result.ImportTarget != result.CurrentTarget)
             {
-                result.Status = ImportStatus.Warning;
-                result.AddMessage("Target text was changed");
+                if (result.ImportTarget.Trim() == result.CurrentTarget)
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage("The import target has a space at the end of the string.");
+                }
+                else if (result.ImportTarget == result.CurrentTarget.Trim())
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage("The current target has a space at the end of the string.");
+                }
+                else
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage("Target text was changed");
+                }
             }
 
             if (result.ImportSource != result.CurrentSource)
             {
-                result.Status = ImportStatus.Warning;
-                result.AddMessage("Source text was changed");
+                if (result.ImportSource.Trim() == result.CurrentSource)
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage("The import source has a space at the end of the string.");
+                }
+                else if (result.ImportSource == result.CurrentSource.Trim())
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage("The current source has a space at the end of the string.");
+                }
+                else
+                {
+                    result.Status = ImportStatus.Warning;
+                    result.AddMessage("Source text was changed");
+                }
             }
 
             result = CheckSymbolsCount(se, result);
