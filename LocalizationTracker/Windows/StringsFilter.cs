@@ -117,7 +117,7 @@ namespace LocalizationTracker.Windows
                 //Updated?.Invoke();
                 NotifyPropertyChanged(nameof(Name));
                 NotifyPropertyChanged(nameof(NameMultiline));
-                
+
             }
         }
 
@@ -487,20 +487,38 @@ namespace LocalizationTracker.Windows
 
             foreach (var line in NameMultiline.Split("\r\n"))
             {
-                if (IgnoreCase == true)
+                if (line.Contains("json"))
                 {
-                    if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim().ToLower()).Any(s => s.Contains(line.Trim().ToLower())))
+                    var searchLine = line.Replace("\\", "/").Trim().Replace(" ", "%20");
+
+                    if (line.Contains("Strings"))
+                        searchLine = searchLine.Substring(line.IndexOf("Strings"));
+                    else if (line.Contains("Game"))
+                        searchLine = searchLine.Substring(line.IndexOf("Game"));
+
+                    if (IgnoreCase == true)
                     {
-                        stringBuilder.AppendLine(line);
+                        if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim().ToLower()).Any(s => s.Contains(searchLine.Trim().ToLower())))
+                        {
+                            stringBuilder.AppendLine(line);
+                        }
+                    }
+                    else
+                    {
+                        if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim()).Any(s => s.Contains(searchLine.Trim())))
+                        {
+                            stringBuilder.AppendLine(line);
+                        }
                     }
                 }
                 else
                 {
-                    if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim()).Any(s => s.Contains(line.Trim())))
+                    if (!stringEntries.Select(s => s.Key.Trim().ToLower()).Any(s => s.Contains(line.Trim().ToLower())))
                     {
                         stringBuilder.AppendLine(line);
                     }
                 }
+               
 
             }
 
