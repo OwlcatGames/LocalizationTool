@@ -316,7 +316,7 @@
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-            <DataGrid x:Name="Strings" Height="Auto" Width="Auto" Grid.Row="2"  CanUserSortColumns="True" ContextMenuOpening="Strings_OnContextMenuOpening" SelectionChanged="Strings_OnSelectionChanged" KeyDown="Strings_OnKeyDown" ScrollViewer.CanContentScroll="True" CanUserDeleteRows="False" CanUserAddRows="False" ItemsSource="{Binding StringsSource}" Margin="0,0,0,27">
+            <DataGrid x:Name="Strings" Height="Auto" Width="Auto" Grid.Row="2"  CanUserSortColumns="True" ContextMenuOpening="Strings_OnContextMenuOpening" SelectionChanged="Strings_OnSelectionChanged" KeyDown="Strings_OnKeyDown" VirtualizingPanel.ScrollUnit="Pixel" CanUserDeleteRows="False" CanUserAddRows="False" ItemsSource="{Binding StringsSource}" Margin="0,0,0,27">
                 <DataGrid.ContextMenu>
                     <ContextMenu ItemsSource="{Binding GridContextMenu}"/>
                 </DataGrid.ContextMenu>
