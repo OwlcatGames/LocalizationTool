@@ -121,6 +121,11 @@ namespace LocalizationTracker
             resp.ContentType = "application/json";
             resp.StatusCode = (int)HttpStatusCode.OK;
 
+            if (AppConfig.Instance.Project == "Expance")
+            {
+                path = path.Replace(".json", "");
+            }
+
             StringManager.Filter.Name = path;
             StringManager.Filter.ForceUpdateFilter();
 

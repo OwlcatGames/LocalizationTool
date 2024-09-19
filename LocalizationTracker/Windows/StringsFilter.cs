@@ -24,6 +24,7 @@ using LocalizationTracker.Utility;
 using LocalizationTracker.Components;
 using System.Windows.Threading;
 using DocumentFormat.OpenXml.ExtendedProperties;
+using static LocalizationTracker.Windows.TraitsFilter;
 
 namespace LocalizationTracker.Windows
 {
@@ -487,9 +488,9 @@ namespace LocalizationTracker.Windows
 
             foreach (var line in NameMultiline.Split("\r\n"))
             {
-                if (line.Contains("json"))
+                if (line.Contains("/"))
                 {
-                    var searchLine = line.Replace("\\", "/").Trim().Replace(" ", "%20");
+                    var searchLine = line.Replace("\\", "/").Trim().Replace(" ", "%20").Replace(".json","");
 
                     if (line.Contains("Strings"))
                         searchLine = searchLine.Substring(line.IndexOf("Strings"));
