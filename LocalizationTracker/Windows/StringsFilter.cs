@@ -488,41 +488,29 @@ namespace LocalizationTracker.Windows
 
             foreach (var line in NameMultiline.Split("\r\n"))
             {
-                if (line.Contains("/"))
-                {
-                    var searchLine = line.Replace("\\", "/").Trim().Replace(" ", "%20").Replace(".json","");
+                var searchLine = line.Replace("\\", "/").Trim().Replace(" ", "%20").Replace(".json", "");
 
-                    if (line.Contains("Strings"))
-                        searchLine = searchLine.Substring(line.IndexOf("Strings"));
-                    else if (line.Contains("Game"))
-                        searchLine = searchLine.Substring(line.IndexOf("Game"));
+                if (line.Contains("Strings"))
+                    searchLine = searchLine.Substring(line.IndexOf("Strings"));
+                else if (line.Contains("Game"))
+                    searchLine = searchLine.Substring(line.IndexOf("Game"));
 
-                    if (IgnoreCase == true)
-                    {
-                        if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim().ToLower()).Any(s => s.Contains(searchLine.Trim().ToLower())))
-                        {
-                            stringBuilder.AppendLine(line);
-                        }
-                    }
-                    else
-                    {
-                        if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim()).Any(s => s.Contains(searchLine.Trim())))
-                        {
-                            stringBuilder.AppendLine(line);
-                        }
-                    }
-                }
-                else
+                if (IgnoreCase == true)
                 {
-                    if (!stringEntries.Select(s => s.Key.Trim().ToLower()).Any(s => s.Contains(line.Trim().ToLower())))
+                    if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim().ToLower()).Any(s => s.Contains(searchLine.Trim().ToLower())))
                     {
                         stringBuilder.AppendLine(line);
                     }
                 }
-               
-
+                else
+                {
+                    if (!stringEntries.Select(s => s.PathRelativeToStringsFolder.Trim()).Any(s => s.Contains(searchLine.Trim())))
+                    {
+                        stringBuilder.AppendLine(line);
+                    }
+                }
             }
-
+       
             if (stringBuilder.Length != 0)
             {
                 NotFound = $"Not found:\r\n{stringBuilder.ToString()}";
