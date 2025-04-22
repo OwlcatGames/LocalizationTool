@@ -1,4 +1,3 @@
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 using LocalizationTracker.Logic;
 using System;
@@ -134,7 +133,7 @@ namespace LocalizationTracker.OpenOffice
 			if (result.Key != null && StringManager.StringsByKey.TryGetValue(result.Key, out se))
 			{
 				se.Reload();
-				result.Path = se.AbsolutePath;
+				result.Path = se.StringPath;
 				result.CurrentSource = se.Data.GetText(m_SourceLocale);
 				result.CurrentTarget = se.Data.GetText(m_TargetLocale);
 			}

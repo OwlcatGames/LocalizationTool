@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Windows.Media;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
 using WeCantSpell.Hunspell;
 using LocalizationTracker.Utility;

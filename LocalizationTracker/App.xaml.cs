@@ -6,78 +6,65 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
+using CommandLine;
 using LocalizationTracker.Tools.GlossaryTools;
+using LocalizationTracker.Tools.SVGTool;
 using LocalizationTracker.Utility;
+using StringsCollector.Data;
+using LocalizationTracker.Windows;
 using wpf4gp;
 
 namespace LocalizationTracker
 {
-	/// <summary>
-	/// Interaction logic for App.xaml
-	/// </summary>
-	public partial class App : Application
-	{
-		private void App_OnStartup(object sender, StartupEventArgs e)
-		{
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+
+
+
+    public partial class App : Application
+    {
+        private async void App_OnStartup(object sender, StartupEventArgs e)
+        {
             Dispatcher.UnhandledException += HandleThreadException;
 
             AppDomain.CurrentDomain.UnhandledException += HandleGlobalException;
 
-            Task.Run(() => OwlcatProtocolListener.StartListeningAsync());
+            _ = OwlcatProtocolListener.StartListeningAsync();
 
             ShutdownMode = ShutdownMode.OnMainWindowClose;
-			
-			string configPath;
-			if (e.Args.Length > 0)
-			{
-				configPath = e.Args[0];
-			}
-			else
-			{
-				string exePath = Environment.GetCommandLineArgs().FirstOrDefault();
-				string exeDir = Path.GetDirectoryName(exePath);
-				configPath = Path.Combine(exeDir, "config.json");
-			}
-
-			if (!File.Exists(configPath))
-			{
-				ShowErrorAndShutdown($"Can't find config at relative path: {configPath}");
-				return;
-			}
-
-            var jsonText = File.ReadAllText(configPath);
-
-			//If "Strings" folder path in config contains a single "\" character then
-			// the whole json is invalid and it will crush the app.
-			if(!CheckJsonIsValid(jsonText))
-			{
-				jsonText = jsonText.Replace("\\", "/");
-				if (!CheckJsonIsValid(jsonText))
-				{
-					ShowErrorAndShutdown($"config.json contents seems to be broken. Check that path values do not contain \\ (forwardslashes), replace them with / (backslashes). After fixing config values try to restart the app.");
-					return;
-				}
-				//Maybe we fixed json values, rewrite fixed json back to config.
-				else
-				{
-					File.WriteAllText(configPath, jsonText);
-				}
-            }
 
             try
             {
+                string configPath = FindConfig(e);
+                var jsonText = File.ReadAllText(configPath);
+                if (!CheckJsonIsValid(jsonText))
+                {
+                    jsonText = jsonText.Replace("\\", "/");
+                    if (!CheckJsonIsValid(jsonText))
+                    {
+                        ShowErrorAndShutdown($"config.json contents seems to be broken. Check that path values do not contain \\ (forwardslashes), replace them with / (backslashes). After fixing config values try to restart the app.");
+                        return;
+                    }
+                    //Maybe we fixed json values, rewrite fixed json back to config.
+                    else
+                    {
+                        File.WriteAllText(configPath, jsonText);
+                    }
+                }
 
                 var config = JsonSerializer.Deserialize<AppConfig>(File.ReadAllText(configPath), JsonSerializerHelpers.JsonSerializerOptions);
-				
-				if(config == null)
-				{
-					ShowErrorAndShutdown($"Loading config failed. Check that your config is a valid JSON. Path: {configPath}");
-					return;
-				}
 
-				if(config != null && string.IsNullOrEmpty(config.StringsFolder))
-				{
+                if (config == null)
+                {
+                    ShowErrorAndShutdown($"Loading config failed. Check that your config is a valid JSON. Path: {configPath}");
+                    return;
+                }
+
+                if (config != null && string.IsNullOrEmpty(config.StringsFolder))
+                {
                     string messageBoxText = "Path to \"Strings\" folder is missing in config file. Do you want to select the folder?";
                     string caption = "Localization Tool";
                     MessageBoxButton button = MessageBoxButton.YesNo;
@@ -86,63 +73,117 @@ namespace LocalizationTracker
 
                     result = MessageBox.Show(messageBoxText, caption, button, icon, MessageBoxResult.Yes);
 
-					if (result == MessageBoxResult.Yes)
-					{
-						using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
-						{
-							System.Windows.Forms.DialogResult folderResult = dialog.ShowDialog();
-							if (folderResult == System.Windows.Forms.DialogResult.OK)
-							{
-								config.StringsFolder = dialog.SelectedPath;
-								Console.WriteLine($"Selected path {config.StringsFolder}");
-								jsonText = jsonText.Replace("\"StringsFolder\": \"\"", $"\"StringsFolder\": \"{config.StringsFolder}\"");
-								File.WriteAllText(configPath, jsonText);
-							}
-							else
-							{
-								ShowErrorAndShutdown($"config.StringsFolder is empty. You have to set up StringsFolder before using Localization Tool.");
-								return;
-							}
-						}
-					}
-					else
-					{
-						ShowErrorAndShutdown($"Strings folder path is not set in config.json. Please specify the path and restart the app");
-						return;
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+                        {
+                            System.Windows.Forms.DialogResult folderResult = dialog.ShowDialog();
+                            if (folderResult == System.Windows.Forms.DialogResult.OK)
+                            {
+                                config.StringsFolder = dialog.SelectedPath;
+                                Console.WriteLine($"Selected path {config.StringsFolder}");
+                                jsonText = jsonText.Replace("\"StringsFolder\": \"\"", $"\"StringsFolder\": \"{config.StringsFolder}\"");
+                                File.WriteAllText(configPath, jsonText);
+                            }
+                            else
+                            {
+                                ShowErrorAndShutdown($"config.StringsFolder is empty. You have to set up StringsFolder before using Localization Tool.");
+                                return;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ShowErrorAndShutdown($"Strings folder path is not set in config.json. Please specify the path and restart the app");
+                        return;
                     }
 
                 }
 
-				if (config.StringsFolder.Contains("\\"))
-				{
+                if (config.StringsFolder.Contains("\\"))
+                {
                     config.StringsFolder = config.StringsFolder.Replace("\\", "/");
-				}
+                }
 
-				if (!Directory.Exists(config.StringsFolder))
-				{
-					ShowErrorAndShutdown($"config.StringsFolder does not exist: {config.StringsFolder}");
-					return;
-				}
+                if (!Directory.Exists(config.StringsFolder))
+                {
+                    ShowErrorAndShutdown($"config.StringsFolder does not exist: {config.StringsFolder}");
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(config.DialogsFolder) && !Directory.Exists(config.DialogsFolder))
+                {
+                    ShowErrorAndShutdown($"config.DialogsFoolder does not exist: {config.DialogsFolder}");
+                    return;
+                }
 
                 if (!config.ModdersVersion && !string.IsNullOrWhiteSpace(config.AssetsFolder) && !Directory.Exists(config.AssetsFolder))
-				{
-					MessageBox.Show($"config.AssetsFolder does not exist: {config.AssetsFolder}.{Environment.NewLine}Remove entry in config.json to suppress.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-				}
+                {
+                    MessageBox.Show(
+                        $"config.AssetsFolder does not exist: {config.AssetsFolder}.{Environment.NewLine}Remove entry in config.json to suppress.",
+                        "Warning",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
 
-				if (!config.ModdersVersion && !string.IsNullOrWhiteSpace(config.BlueprintsFolder) && !Directory.Exists(config.BlueprintsFolder))
-				{
-					MessageBox.Show($"config.BlueprintsFolder does not exist: {config.BlueprintsFolder}.{Environment.NewLine}Remove entry in config.json to suppress.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-				}
+                if (!config.ModdersVersion && !string.IsNullOrWhiteSpace(config.BlueprintsFolder) && !Directory.Exists(config.BlueprintsFolder))
+                {
+                    MessageBox.Show(
+                        $"config.BlueprintsFolder does not exist: {config.BlueprintsFolder}.{Environment.NewLine}Remove entry in config.json to suppress.",
+                        "Warning",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
 
-				AppConfig.SetupInstance(config);
-				Glossary.SetupInstance();
-				
-			}
-			catch (Exception ex)
-			{
-				ShowErrorAndShutdown(ex.Message + "\n" + ex.StackTrace);
-			}
-		}
+                AppConfig.SetupInstance(config);
+
+                Glossary.SetupInstance();
+
+                if (e.Args.Contains("--generatesvg"))
+                    Parser.Default.ParseArguments<GenerateSvgFromConsole>(e.Args).WithParsed<GenerateSvgFromConsole>(async t => await t.Execute());
+
+            }
+            catch (Exception ex)
+            {
+                ShowErrorAndShutdown(ex.Message + "\n" + ex.StackTrace);
+            }
+        }
+
+        private static string FindConfig(StartupEventArgs e)
+        {
+            var configIndex = e.Args.IndexAt(arg => arg == "--config");
+            var configFile = configIndex > -1
+                ? e.Args.Length > configIndex
+                    ? e.Args[configIndex]
+                    : ""
+                : "";
+
+            string[] candidates =  {
+                configFile,
+                Path.Combine(Directory.GetCurrentDirectory(), "config.json"),
+                Path.Combine(Path.GetDirectoryName(Environment.GetCommandLineArgs().FirstOrDefault()) ?? string.Empty, "config.json")
+            };
+
+            string? configPath = candidates.FirstOrDefault(File.Exists);
+
+            if (configPath != null)
+            {
+                return configPath;
+            }
+
+            var directories = candidates.Aggregate(
+                new StringBuilder(1000),
+                (builder, s) => (builder.Length > 0 ? builder.Append(Environment.NewLine) : builder).Append(s));
+            throw new InvalidOperationException($"Could not find the config in one of the directories\n{directories}");
+        }
+
+        private void MainWindow_ScanCompleted(object sender, EventArgs e)
+        {
+            Console.WriteLine("Scanning completed!");
+
+            var mainWindow = (MainWindow)sender;
+            GenerateSVG.FindAllDialogues();
+        }
 
         /// <summary>
         /// This method is used to check JSON validity. 
@@ -158,32 +199,31 @@ namespace LocalizationTracker
         /// <param name="jsonText"></param>
         /// <returns></returns>
         private bool CheckJsonIsValid(string jsonText)
-		{
-			var result = true;
-			if (jsonText == null)
-				return false;
+        {
+            var result = true;
+            if (jsonText == null)
+                return false;
             try
             {
                 using (JsonDocument doc = JsonDocument.Parse(jsonText))
                 {
                     // it's just a test
                 }
-                result =  true;
+                result = true;
             }
             catch (JsonException)
             {
                 result = false;
             }
 
-			return result;
-
+            return result;
         }
 
-		private void ShowErrorAndShutdown(string error)
-		{
-			MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-			Shutdown();
-		}
+        private void ShowErrorAndShutdown(string error)
+        {
+            MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
+        }
         private static void HandleThreadException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             var ex = e.Exception;
@@ -233,5 +273,24 @@ namespace LocalizationTracker
             base.OnExit(e);
         }
 
+    }
+
+    [Verb("generatesvg", HelpText = "Generate SVG files for this project")]
+    public class GenerateSvgFromConsole
+    {
+        [Option('g', "generatesvg")]
+        public string Option { get; set; } = "";
+        public async Task Execute()
+        {
+            if (Application.Current.MainWindow is not MainWindow mainWindow)
+            {
+                mainWindow = new MainWindow();
+                Application.Current.MainWindow = mainWindow;
+            }
+
+            await mainWindow.scanCompletionSource.Task;
+            await GenerateSVG.FindAllDialogues(Option);
+            Application.Current.Shutdown();
+        }
     }
 }

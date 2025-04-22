@@ -1,6 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using Kingmaker.Localization.Shared;
+using StringsCollector.Data;
 using LocalizationTracker.Components;
 using LocalizationTracker.Data;
 using LocalizationTracker.Utility;
@@ -11,6 +11,12 @@ namespace LocalizationTracker.Excel
 {
 	public class ExcelSourceUpdateExporter : ExcelLocalizationExporter
 	{
+		ExcelStyles _style;
+
+        public ExcelSourceUpdateExporter(ExcelStyles excelStyles)
+		{
+			_style = excelStyles;
+		}
 		public override ExportData PrepareDataToExport(ExportData data)
 		{
 			var prevSrcLocale = StringEntry.SourceLocale;
@@ -26,7 +32,6 @@ namespace LocalizationTracker.Excel
                 line.UpdateInlines();
 				if (data.ExportParams.TagRemovalPolicy == TagRemovalPolicy.DeleteUpdatedTag)
                 {
-
                     System.Windows.Media.Color color = new System.Windows.Media.Color
                     {
                         R = 215,
@@ -48,8 +53,8 @@ namespace LocalizationTracker.Excel
 
                 }
 
-				var source = ExcelStyles.DiffToSharedString(line.SourceLocaleEntry.Inlines);
-				var target = ExcelStyles.DiffToSharedString(line.TargetLocaleEntry.Inlines);
+				var source = _style.DiffToSharedString(line.SourceLocaleEntry.Inlines);
+				var target = _style.DiffToSharedString(line.TargetLocaleEntry.Inlines);
 				builder.Clear();
 				AddClearText(builder, line.SourceLocaleEntry.Inlines);
 				pairs.Add(line, new DiffPair(source, target, builder.ToString()));

@@ -6,12 +6,12 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using common4gp;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
 using LocalizationTracker.Data;
 using LocalizationTracker.Logic;
 using LocalizationTracker.Utility;
 using LocalizationTracker.Windows;
+using static LocalizationTracker.Tools.GlossaryTools.GlossarySheet;
 
 namespace LocalizationTracker.Tools.GlossaryTools;
 
@@ -20,7 +20,7 @@ public class Glossary
     private ConcurrentDictionary<string, ConcurrentDictionary<Locale, List<TermEntry>>> m_TermsEntryMap = new();
     private ConcurrentDictionary<string, ConcurrentDictionary<Locale, List<TermEntry>>> m_TermsEntryNoTagsMap = new();
     
-    private Dictionary<string, GlossarySheet.Term> m_Glossary = new();
+    private Dictionary<string, IGlossary> m_Glossary = new();
     private ConcurrentDictionary<string, HashSet<Locale>> m_ProcessedStrings = new();
     
     private TermTemplateCollection m_TermTemplateCollection = new();
@@ -61,6 +61,19 @@ public class Glossary
             m_Glossary[term.Id] = term;
         }
         
+        RecalculateTerms();
+        if (updateRequired)
+            GlossaryUpdatedEvent?.Invoke();
+    }
+
+    public void Initialize(AmberGlossarySheet sheet, bool updateRequired)
+    {
+        m_Glossary.Clear();
+        foreach (var term in sheet)
+        {
+            m_Glossary[term.Id] = term; 
+        }
+
         RecalculateTerms();
         if (updateRequired)
             GlossaryUpdatedEvent?.Invoke();
@@ -115,7 +128,7 @@ public class Glossary
         inline.Underline = true;
         inline.InlineType = InlineType.GlossaryTerm;
         
-        if (mismatched && StringManager.Filter.Mode == FilterMode.Glossary_Mismatch)
+        if (mismatched && StringsFilter.Filter.Mode == FilterMode.Glossary_Mismatch)
             inline.FontWeight = FontWeights.Bold;
 
         inline.Foreground = caseError ? Colors.Red : Colors.Black;
@@ -131,7 +144,7 @@ public class Glossary
         var result = new List<InlineTemplate>();
         var textEnd = text.Length;
         int cursor = 0;
-        var targetEntriesCollection = StringManager.Filter.HideTags ? m_TermsEntryNoTagsMap : m_TermsEntryMap;
+        var targetEntriesCollection = StringsFilter.Filter.HideTags ? m_TermsEntryNoTagsMap : m_TermsEntryMap;
         if (!targetEntriesCollection.ContainsKey(localeEntry.StringKey) ||
             !targetEntriesCollection[localeEntry.StringKey].ContainsKey(localeEntry.Locale))
             return new InlinesWrapper();
@@ -258,7 +271,7 @@ public class Glossary
 
     private static void AddTermEntry(
         LocaleEntry localeEntry, 
-        GlossarySheet.Term term, 
+        IGlossary term, 
         string termId, 
         (int startIndex, int endIndex, bool caseError) entry,
         ConcurrentDictionary<Locale, List<TermEntry>> localesMap)

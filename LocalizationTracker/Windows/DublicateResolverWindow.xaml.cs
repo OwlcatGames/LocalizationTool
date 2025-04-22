@@ -1,4 +1,4 @@
-﻿using Kingmaker.Localization.Shared;
+﻿using StringsCollector.Data;
 using LocalizationTracker.Data;
 using LocalizationTracker.Logic;
 using LocalizationTracker.Utility;

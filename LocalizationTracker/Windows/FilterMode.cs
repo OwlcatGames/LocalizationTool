@@ -10,6 +10,7 @@
 		Tags_Mismatch,
 		Unreal_Unused,
 		Glossary_Mismatch,
+		Voice_Comments
 	}
 
 	public static class FilterModeUtililty
@@ -24,6 +25,7 @@
 			FilterMode.Tags_Mismatch,
 			FilterMode.Unreal_Unused,
 			FilterMode.Glossary_Mismatch,
-		};
+            FilterMode.Voice_Comments
+        };
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using LocalizationTracker.Logic;
 using LocalizationTracker.Windows;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,8 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace LocalizationTracker
 {
@@ -19,8 +19,8 @@ namespace LocalizationTracker
         static HttpListener _listener = new HttpListener();
 
 
-        public static async Task StartListeningAsync(int port = 55555)
-       {
+        public static async Task StartListeningAsync(int port = 35556)
+        {
             string[] args = new[] { $"http://+:{port}/" };
 
             if (args == null || args.Length == 0)
@@ -42,34 +42,50 @@ namespace LocalizationTracker
                 HttpListenerResponse response = context.Response;
 
                 using (var reader = new StreamReader(context.Request.InputStream))
-                using (var jsonReader = new JsonTextReader(reader))
                 {
+                    // Проверяем, если запрос на получение статуса
                     if (context.Request.HttpMethod == "GET" && context.Request.Url.LocalPath == "/Status")
                     {
                         Status(response);
                     }
-
-                    if (context.Request.HttpMethod == "GET" && context.Request.Url.LocalPath == "/owlcat://open/")
+                    else
                     {
-                        string path = context.Request.QueryString["path"];
-                        if (!string.IsNullOrEmpty(path))
+                        // Читаем тело запроса
+                        string requestBody = await reader.ReadToEndAsync();
+                        var commandInfo = JsonSerializer.Deserialize<ExecuteCommandInfo>(requestBody);
+
+                        // Проверяем, если это POST запрос с командой
+                        if (context.Request.HttpMethod == "POST" && context.Request.Url.LocalPath == "/Command")
                         {
-                            Console.WriteLine("Команда OpenString получена");
-                            Console.WriteLine($"Path: {path}");
+                            if (commandInfo.Args != null && !string.IsNullOrEmpty(commandInfo.Args.FirstOrDefault()))
+                            {
+                                string path = commandInfo.Args.FirstOrDefault();
+                                Console.WriteLine("Команда OpenString получена");
+                                Console.WriteLine($"Path: {path}");
 
-                            await OpenString(response, path);
-                            response.OutputStream.Close();
-
+                                await OpenString(response, path); // Передаем путь для дальнейшей обработки
+                                response.OutputStream.Close();
+                            }
+                            else
+                            {
+                                // Если отсутствует параметр 'path'
+                                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                                byte[] buffer = Encoding.UTF8.GetBytes("Missing 'path' parameter");
+                                response.ContentLength64 = buffer.Length;
+                                await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
+                            }
                         }
                         else
                         {
-                            response.StatusCode = (int)HttpStatusCode.BadRequest;
-                            byte[] buffer = System.Text.Encoding.UTF8.GetBytes("Missing 'path' parameter");
+                            // Неверный метод или путь запроса
+                            response.StatusCode = (int)HttpStatusCode.NotFound;
+                            byte[] buffer = Encoding.UTF8.GetBytes("Unsupported request");
                             response.ContentLength64 = buffer.Length;
                             await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
                         }
                     }
                 }
+
             }
         }
 
@@ -94,7 +110,6 @@ namespace LocalizationTracker
                 Guid = _guid,
                 IsPlaying = true,
                 ServiceType = "loctool",
-                SupportedCommands = new List<string> { "Status", "FindLocale" },
                 ProcessID = Process.GetCurrentProcess().Id
             };
 
@@ -126,8 +141,8 @@ namespace LocalizationTracker
                 path = path.Replace(".json", "");
             }
 
-            StringManager.Filter.Name = path;
-            StringManager.Filter.ForceUpdateFilter();
+            StringsFilter.Filter.Name = path.Substring(path.IndexOf("=") + 1);
+            StringsFilter.Filter.ForceUpdateFilter();
 
             string result = $"Processed path: {path}";
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(result);
@@ -143,6 +158,12 @@ namespace LocalizationTracker
                 _listener.Stop();
                 _listener.Close();
             }
+        }
+
+        public struct ExecuteCommandInfo
+        {
+            public string CommandName { get; set; }
+            public string[] Args { get; set; }
         }
     }
 }

@@ -1,10 +1,9 @@
 ﻿using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Spreadsheet;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
+using StringsCollector.Data;
 using LocalizationTracker.Components;
 using LocalizationTracker.Data;
-using LocalizationTracker.Data.Unreal;
 using LocalizationTracker.Logic;
 using LocalizationTracker.Utility;
 using System.Collections.Generic;
@@ -12,13 +11,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using static LocalizationTracker.Data.Unreal.UnrealStringData;
+using static StringsCollector.Data.Unreal.UnrealStringData;
 
 namespace LocalizationTracker.Excel
 {
     public class ExcelImporter : IImporter
     {
-        private static readonly string[] s_InvalidTexts =
+        protected static readonly string[] s_InvalidTexts =
         {
             "[insert your text here]",
             "[insert translation here]"
@@ -26,19 +25,19 @@ namespace LocalizationTracker.Excel
 
         WorkbookWrapper _wrapper;
 
-        private Locale m_SourceLocale;
+        protected Locale m_SourceLocale;
 
-        private Locale m_TargetLocale;
+        protected Locale m_TargetLocale;
 
-        private List<string> m_Traits;
+        protected List<string> m_Traits;
 
-        private string m_KeyColumn;
+        protected string m_KeyColumn;
 
-        private string m_SourceColumn;
+        protected string m_SourceColumn;
 
-        private string m_OldTargetColumn;
+        protected string m_OldTargetColumn;
 
-        private string m_ResultColumn;
+        protected string m_ResultColumn;
 
         public ImportResult Import([NotNull] string filePath)
         {
@@ -68,7 +67,7 @@ namespace LocalizationTracker.Excel
             }
         }
 
-        private void ParseHeader(Row headerRow)
+        protected void ParseHeader(Row headerRow)
         {
             if (headerRow == null)
             {
@@ -106,7 +105,7 @@ namespace LocalizationTracker.Excel
             m_OldTargetColumn = currentCell.CellReference.Value.Substring(0, 1);
             m_ResultColumn = resultCell.CellReference.Value.Substring(0, 1);
 
-            var m = Regex.Match(GetCellValue(sourceCell), @"source \[(\w*)\]");
+            var m = Regex.Match(GetCellValue(sourceCell), @"source \[(\w*-?\w*)\]");
             m_SourceLocale = m.Groups[1].Value;
 
             m = Regex.Match(GetCellValue(currentCell), @"current \[(\w*)\]");
@@ -131,7 +130,7 @@ namespace LocalizationTracker.Excel
             }
         }
 
-        private ImportEntry ImportRow(Row row)
+        protected virtual ImportEntry ImportRow(Row row)
         {
             // header row
             if (row.RowIndex <= 1)
@@ -153,11 +152,9 @@ namespace LocalizationTracker.Excel
                 if (StringManager.StringsByKey.TryGetValue(result.Key, out se))
                 {
                     se.Reload();
-                    result.Path = se.AbsolutePath;
+                    result.Path = se.StringPath;
                     result.CurrentSource = se.Data.GetText(m_SourceLocale);
                     result.CurrentTarget = se.Data.GetText(m_TargetLocale);
-
-                    MaxSymbols(m_TargetLocale, result.ImportResult, se.Data.Kind);
                 }
             }
 
@@ -312,7 +309,7 @@ namespace LocalizationTracker.Excel
             return result;
         }
 
-        private string GetCellValue(Cell cell)
+        protected string GetCellValue(Cell cell)
         {
             if (cell.DataType == null)
             {
@@ -347,10 +344,5 @@ namespace LocalizationTracker.Excel
             throw new IOException($"Could not find shared string value {cell.InnerText} in excel document for cell {cell.CellReference}");
         }
 
-        public void MaxSymbols(Locale locale, string resultText, StringKind stringKind)
-        {
-
-
-        }
     }
 }

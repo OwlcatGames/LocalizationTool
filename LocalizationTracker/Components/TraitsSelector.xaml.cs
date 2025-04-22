@@ -9,7 +9,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Windows;
 
 namespace LocalizationTracker.Components

@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LocalizationTracker.Windows"
         xmlns:data="clr-namespace:LocalizationTracker.Data"
-        xmlns:shared="clr-namespace:Kingmaker.Localization.Shared"
         xmlns:components="clr-namespace:LocalizationTracker.Components"
         xmlns:Properties="clr-namespace:LocalizationTracker.Properties"
         mc:Ignorable="d"

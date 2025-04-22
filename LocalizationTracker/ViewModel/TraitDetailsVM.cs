@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
+using StringsCollector.Data.Wrappers;
 
 namespace LocalizationTracker.ViewModel
 {

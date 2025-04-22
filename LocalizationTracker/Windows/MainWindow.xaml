@@ -8,7 +8,7 @@
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=MultiSelectTreeView"
         xmlns:vm="clr-namespace:LocalizationTracker.ViewModel"
         xmlns:components="clr-namespace:LocalizationTracker.Components"
-        xmlns:shared="clr-namespace:Kingmaker.Localization.Shared"
+        xmlns:lib="clr-namespace:StringsCollector.Data;assembly=StringsCollector"
         xmlns:Properties="clr-namespace:LocalizationTracker.Properties" 
         xmlns:locTrackerWindows="clr-namespace:LocalizationTracker.Windows;assembly=LocalizationTracker"
         xmlns:localizationTracker="clr-namespace:LocalizationTracker"
@@ -29,6 +29,11 @@
         <Style TargetType="TextBox" x:Key="TextBoxWrapStyle">
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="FontSize">
+                <Setter.Value>
+                    <Binding Path="FontSizeValue" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" UpdateSourceTrigger="PropertyChanged" />
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="TextBlock" x:Key="TextBlockWrapStyle">
             <Setter Property="TextWrapping" Value="Wrap"/>
@@ -47,6 +52,11 @@
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Padding" Value="2"/>
+            <Setter Property="FontSize">
+                <Setter.Value>
+                    <Binding Path="FontSizeValue" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" UpdateSourceTrigger="PropertyChanged" />
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="{x:Type Label}">
             <Setter Property="Margin" Value="0"/>
@@ -264,7 +274,7 @@
                         </Grid.RowDefinitions>
                         <DatePicker SelectedDate="{Binding ElementName=Window, Path=Filter.ModificationDateFrom, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" />
                         <DatePicker SelectedDate="{Binding ElementName=Window, Path=Filter.ModificationDateTo, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" />
-                        <ComboBox MaxWidth="50" Grid.Row="0" Grid.Column="2" SelectedItem="{Binding ElementName=Window, Path=Filter.ModificationLocale, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{x:Static shared:Locale.ValuesForTraitsFilter}" components:ComboBoxWidthFromItemsBehavior.ComboBoxWidthFromItems="True" HorizontalAlignment="Stretch" Height="24" />
+                        <ComboBox MaxWidth="50" Grid.Row="0" Grid.Column="2" SelectedItem="{Binding ElementName=Window, Path=Filter.ModificationLocale, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{x:Static lib:Locale.ValuesForTraitsFilter}" components:ComboBoxWidthFromItemsBehavior.ComboBoxWidthFromItems="True" HorizontalAlignment="Stretch" Height="24" />
                         <components:TraitsSelector Height="24" MaxWidth="50" TraitsSource="{Binding ElementName=Window, Path=Filter.ModificationTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="{Binding ElementName=Window, Path=Filter.ModificationTraitsAreLocale, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left"  />
                         <Button  x:Name="InputButton" Content="Search"  Grid.Row="0" Grid.Column="4" Width="50" HorizontalAlignment="Left" Background="LightBlue" Click="SearchButton_Click" IsDefault="true"/>
                     </Grid>
@@ -299,7 +309,7 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition />
                                     </Grid.RowDefinitions>
-                                    <ComboBox Grid.Column="0" SelectedItem="{Binding Path=Locale}" ItemsSource="{x:Static shared:Locale.ValuesForTraitsFilter}"  Width="60"/>
+                                    <ComboBox Grid.Column="0" SelectedItem="{Binding Path=Locale}" ItemsSource="{x:Static lib:Locale.ValuesForTraitsFilter}"  Width="60"/>
                                     <components:TraitsSelector HorizontalContentAlignment="Left" Height="22" Width="120" Grid.Column="1" TraitsSource="{Binding Path=Traits}" IsLocale="{Binding Path=LocaleTraitsSelection}" />
                                     <CheckBox Grid.Column="2" IsChecked="{Binding Not}" VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="3" Text="Not" VerticalAlignment="Center" />
@@ -313,6 +323,8 @@
                     <Border Margin="0,25,0,0"/>
                     <Button Content="Smart Commit" Click="OnSmartCommitClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
                     <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding GlossaryIsEnabled}"/>
+                    <Button Content="Updated Speakers" Click="UpdatedSpeakersWindow_Click" Visibility="{Binding ShowOnNonModdersOnly}"/>
+                    <Button Content="Fan Loc Import" Click="Import" Visibility="{Binding ShowOnPathfinderOnly}"/>
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
@@ -360,9 +372,32 @@
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTextColumn Width="40" MinWidth ="40" IsReadOnly="True" Header="Status" SortMemberPath="TranslationStatus" Binding="{Binding Path=(data:StringEntry.TranslationStatus)}" ClipboardContentBinding="{Binding Path=(data:StringEntry.TranslationStatus)}" Visibility="{Binding StatusColumnVisibility, Source={x:Static localizationTracker:AppConfig.Instance}}" />
+                    <DataGridTextColumn Width="40" MinWidth="40" IsReadOnly="True" Header="Status" SortMemberPath="TranslationStatus" 
+                    Binding="{Binding Path=(data:StringEntry.TranslationStatus)}" 
+                    ClipboardContentBinding="{Binding Path=(data:StringEntry.TranslationStatus)}" 
+                    Visibility="{Binding StatusColumnVisibility, Source={x:Static localizationTracker:AppConfig.Instance}}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="FontSize">
+                                    <Setter.Value>
+                                        <Binding Path="FontSizeValue" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" UpdateSourceTrigger="PropertyChanged" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
 
-                    <DataGridTextColumn Width="60" MinWidth ="40" IsReadOnly="True" Header="Speaker" SortMemberPath="Speaker" Binding="{Binding Path=(data:StringEntry.Speaker)}" ClipboardContentBinding="{Binding Path=(data:StringEntry.Speaker)}" />
+                    <DataGridTextColumn Width="60" MinWidth ="40" IsReadOnly="True" Header="Speaker" SortMemberPath="Speaker" Binding="{Binding Path=(data:StringEntry.Speaker)}" ClipboardContentBinding="{Binding Path=(data:StringEntry.Speaker)}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="FontSize">
+                                    <Setter.Value>
+                                        <Binding Path="FontSizeValue" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType={x:Type Window}}" UpdateSourceTrigger="PropertyChanged" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
 
                     <DataGridTemplateColumn MinWidth ="400" MaxWidth="650" SortMemberPath="SourceLocaleEntry.Text">
                         <DataGridTemplateColumn.Header>
@@ -371,8 +406,6 @@
                                 <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocale,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocaleValues}" />
                                 <StackPanel Name="TraitSelection" Orientation="Horizontal" Visibility="Collapsed">
                                     <TextBlock Width="30" Margin="20,0,0,0" VerticalAlignment="Center">Trait</TextBlock>
-                                    <!--                                    <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceTrait, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceTraitValues}" />
--->
                                     <components:TraitsSelector  TraitsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=Filter.UpdatedFilterTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="true" VerticalAlignment="Center" />
 
                                 </StackPanel>
@@ -480,6 +513,117 @@
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <DataTemplate>
                                 <TextBox Text="{Binding TargetLocaleEntry.TranslatorComment}" Style="{StaticResource TextBoxWrapStyle}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn MinWidth ="400" MaxWidth="650" SortMemberPath="SourceLocaleEntry.VoiceComment">
+                        <DataGridTemplateColumn.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Width="130" VerticalAlignment="Center">VoiceComment (source)</TextBlock>
+                                <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocale, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocaleValues}" />
+                            </StackPanel>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.ClipboardContentBinding>
+                            <Binding Path="SourceLocaleEntry.VoiceComment"/>
+                        </DataGridTemplateColumn.ClipboardContentBinding>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding SourceLocaleEntry.VoiceComment}" Style="{StaticResource TextBlockWrapStyle}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding SourceLocaleEntry.VoiceComment,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn MinWidth ="400" MaxWidth="650" SortMemberPath="TargetLocaleEntry.VoiceComment">
+                        <DataGridTemplateColumn.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Width="130" VerticalAlignment="Center">VoiceComment (target)</TextBlock>
+                                <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.TargetLocale, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.TargetLocaleValues}" />
+                            </StackPanel>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.ClipboardContentBinding>
+                            <Binding Path="SourceLocaleEntry.VoiceComment"/>
+                        </DataGridTemplateColumn.ClipboardContentBinding>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding TargetLocaleEntry.VoiceComment}" Style="{StaticResource TextBlockWrapStyle}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding TargetLocaleEntry.VoiceComment,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn MinWidth ="200" MaxWidth="650" SortMemberPath="SourceLocaleEntry.Text">
+                        <DataGridTemplateColumn.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Width="45" VerticalAlignment="Center">Source</TextBlock>
+                            </StackPanel>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.ClipboardContentBinding>
+                            <Binding Path="SourceLocaleEntry.Text"/>
+                        </DataGridTemplateColumn.ClipboardContentBinding>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <components:InlinesTextBlock Grid.Column="0" InlinesWrapper="{Binding SourceLocaleEntry.Inlines}" Style="{StaticResource TextBlockWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center"  Foreground="{Binding SourceLocaleEntry.Color}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"  IsManipulationEnabled="False"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding SourceLocaleEntry.TextBlockColor}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn MinWidth ="200" MaxWidth="650" SortMemberPath="TargetLocaleEntry.Text">
+                        <DataGridTemplateColumn.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Width="45" VerticalAlignment="Center">Target</TextBlock>
+                            </StackPanel>
+                        </DataGridTemplateColumn.Header>
+                        <DataGridTemplateColumn.ClipboardContentBinding>
+                            <Binding Path="TargetLocaleEntry.Text"/>
+                        </DataGridTemplateColumn.ClipboardContentBinding>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <components:InlinesTextBlock InlinesWrapper="{Binding TargetLocaleEntry.Inlines }" Style="{StaticResource TextBlockWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center"  Foreground="{Binding TargetLocaleEntry.Color}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Text="{Binding TargetLocaleEntry.Text,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding TargetLocaleEntry.TextBlockColor}"/>
+                                </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>

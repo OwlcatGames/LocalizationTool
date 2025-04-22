@@ -14,7 +14,7 @@ namespace LocalizationTracker.Logic.Excel
 			_data = data;
 		}
 
-		protected ExportData _data;
+		public ExportData _data;
 
 		protected IExporter _exporter;
 

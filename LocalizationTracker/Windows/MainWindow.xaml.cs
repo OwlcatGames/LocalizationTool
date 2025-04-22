@@ -12,7 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 using LocalizationTracker.Properties;
 using LocalizationTracker.Tools;
@@ -34,19 +33,15 @@ using System.Reflection;
 using System.Text.Json;
 using DeepL;
 using DeepL.Model;
-using LocalizationTracker.Data.Unreal;
-using LocalizationTracker.Data.Wrappers;
-using DocumentFormat.OpenXml.Office2013.Drawing.Chart;
-using System.Windows.Media;
-using System.Drawing;
 using System.Windows.Documents;
 using LocalizationTracker.Components;
 using LocalizationTracker.Tools.GlossaryTools;
 using Brushes = System.Windows.Media.Brushes;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Globalization;
-using System.Windows.Data;
+using LocalizationTracker.Tools.SVGTool;
+using StringsCollector.Data.Unreal;
+using StringsCollector.Data.Unity;
 
 namespace LocalizationTracker.Windows
 {
@@ -56,6 +51,9 @@ namespace LocalizationTracker.Windows
     public partial class MainWindow : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
+        RepoConnection repoConnection = new RepoConnection();
+        public TaskCompletionSource<bool> scanCompletionSource = new TaskCompletionSource<bool>();
+
 
         public double FontValue = 13;
         public double FontSizeValue
@@ -86,7 +84,7 @@ namespace LocalizationTracker.Windows
         public bool IsDefault { get; set; }
 
         [NotNull]
-        public StringsFilter Filter => StringManager.Filter;
+        public StringsFilter Filter => StringsFilter.Filter;
 
         [NotNull]
         public readonly DispatcherTimer FilterTimer = new() { Interval = TimeSpan.FromSeconds(2) };
@@ -113,6 +111,7 @@ namespace LocalizationTracker.Windows
         private DeepL.Translator m_Translator;
 
         private MultilineSearch m_MultilineSearchWindow;
+        private SpeakerChangedWindow m_SpeakerChangedWindow;
 
         public Locale SourceLocale
         {
@@ -121,7 +120,7 @@ namespace LocalizationTracker.Windows
             {
                 StringEntry.SourceLocale = value;
                 NotifyPropertyChanged(nameof(SourceLocale));
-                UpdateFilter();
+                UpdateFilter(true);
             }
         }
 
@@ -134,7 +133,7 @@ namespace LocalizationTracker.Windows
             {
                 StringEntry.TargetLocale = value;
                 NotifyPropertyChanged(nameof(TargetLocale));
-                UpdateFilter();
+                UpdateFilter(true);
             }
         }
 
@@ -150,7 +149,7 @@ namespace LocalizationTracker.Windows
             set
             {
                 m_WordCueCount = value;
-                var sortedPaths = StringManager.FilteredStrings;
+                var sortedPaths = StringsFilter.FilteredStrings;
                 if (value)
                     UpdateCounts(sortedPaths, SourceLocale);
                 else
@@ -190,7 +189,7 @@ namespace LocalizationTracker.Windows
                                     {
                                         FilterTimer.Stop();
                                         UpdateFilter(Filter.Mode == FilterMode.Updated_Trait);
-                                        UpdateFilter(StringManager.Filter.Text != null || StringManager.Filter.Text == "");
+                                        UpdateFilter(StringsFilter.Filter.Text != null || StringsFilter.Filter.Text == "");
                                     };
 
                 Filter.Updated +=
@@ -237,28 +236,26 @@ namespace LocalizationTracker.Windows
             LoadFilterColor();
             LoadFontSize();
 
-
             DataContext = this;
 
             if (AppConfig.Instance.DeepLAvailable)
             {
                 m_Translator = new Translator(AppConfig.Instance.DeepL.APIKey);
             }
-
-            StringManager.Archive = AppConfig.Instance.Engine == AppConfig.EngineType.Unity
-                ? new StringsArchiveUnity()
-                : new StringsArchiveUnreal();
+            StringManager.InitializeArchive(AppConfig.Instance.Engine);
 
             Strings.AutoGenerateColumns = false;
             Folders.SelectionChanged += (_, _) => UpdateStringsView();
-            StringEntry.StaticPropertyChanged += (propertyName) =>
-            {
-                if (propertyName == nameof(StringEntry.SourceLocale) || propertyName == nameof(StringEntry.TargetLocale))
-                {
-                    OnPropertyChanged(nameof(SourceLocale));
-                    OnPropertyChanged(nameof(TargetLocale));
-                }
-            };
+
+            Action onPropertyChanged = () =>
+                                       {
+                                           OnPropertyChanged(nameof(SourceLocale));
+                                           OnPropertyChanged(nameof(TargetLocale));
+                                       };
+
+            StringEntry.SourceLocaleChanged += onPropertyChanged;
+            StringEntry.TargetLocaleChanged += onPropertyChanged;
+
             UpdateFilterMode();
             Rescan();
         }
@@ -307,7 +304,7 @@ namespace LocalizationTracker.Windows
 
         private void SaveFilterColor()
         {
-            var filterColor = StringManager.Filter.SelectedColor;
+            var filterColor = StringsFilter.Filter.SelectedColor;
             var savedColor = JsonSerializer.Serialize(filterColor);
             Settings.Default.Selected_Color = savedColor;
 
@@ -317,7 +314,7 @@ namespace LocalizationTracker.Windows
             if (!string.IsNullOrWhiteSpace(Settings.Default.Selected_Color))
             {
                 var savedColor = JsonSerializer.Deserialize<System.Windows.Media.Color>(Settings.Default.Selected_Color);
-                StringManager.Filter.SelectedColor = savedColor;
+                StringsFilter.Filter.SelectedColor = savedColor;
             }
         }
 
@@ -343,6 +340,7 @@ namespace LocalizationTracker.Windows
             {
                 var item = new MenuItem { Header = "Rescan Strings" };
                 item.Click += RescanStrings;
+                item.FontSize = FontSizeValue;
 
                 yield return item;
 
@@ -351,10 +349,12 @@ namespace LocalizationTracker.Windows
                 item = new MenuItem { Header = "Export..." };
                 item.Click += ExportSelected;
                 item.IsEnabled = Strings.SelectedItems.Count > 0;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 item = new MenuItem { Header = "Import..." };
                 item.Click += Import;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 yield return new Separator();
@@ -363,10 +363,12 @@ namespace LocalizationTracker.Windows
                 {
                     item = new MenuItem { Header = "DeepL translate" };
                     item.Click += DeepLTranslate;
+                    item.FontSize = FontSizeValue;
                     yield return item;
 
                     item = new MenuItem { Header = "DeepL translate comments" };
                     item.Click += DeepLTranslateComments;
+                    item.FontSize = FontSizeValue;
                     yield return item;
 
 
@@ -375,12 +377,14 @@ namespace LocalizationTracker.Windows
 
                 item = new MenuItem { Header = "String Details" };
                 item.Click += ShowStringDetails;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 if (ImportResults != null)
                 {
                     item = new MenuItem { Header = "Last Import Results" };
                     item.Click += ShowImportResults;
+                    item.FontSize = FontSizeValue;
                     yield return item;
                 }
 
@@ -388,8 +392,19 @@ namespace LocalizationTracker.Windows
                 {
                     item = new MenuItem { Header = "Last Export Results" };
                     item.Click += ShowExportResults;
+                    item.FontSize = FontSizeValue;
                     yield return item;
                 }
+
+                item = new MenuItem { Header = "Open file directory" };
+                item.Click += OpenFileDirectories;
+                item.FontSize = FontSizeValue;
+                yield return item;
+
+                item = new MenuItem { Header = "Open file" };
+                item.Click += OpenFileFromDirectory;
+                item.FontSize = FontSizeValue;
+                yield return item;
 
                 yield return new Separator();
                 var selectedItem = ((StringEntry)Strings.SelectedItem);
@@ -398,9 +413,11 @@ namespace LocalizationTracker.Windows
                     item = new MenuItem { Header = "Update Translation Source" };
                     item.Click += UpdateTranslationSourceSelected;
                     item.IsEnabled = Strings.SelectedItems.Count > 0;
+                    item.FontSize = FontSizeValue;
                     yield return item;
 
                     item = new MenuItem { Header = "Apply Diffs" };
+                    item.FontSize = FontSizeValue;
                     if (selectedItem != null && selectedItem.SourceLocaleEntry.TryGetInlinesCollection(InlineCollectionType.DiffSource, out var inlinesWrapper))
                     {
                         int pointer = 0;
@@ -438,16 +455,19 @@ namespace LocalizationTracker.Windows
                     item = new MenuItem { Header = "Force Translation Source" };
                     item.Click += ForceTranslationSourceSelected;
                     item.IsEnabled = Strings.SelectedItems.Count > 0;
+                    item.FontSize = FontSizeValue;
                     yield return item;
                 }
 
                 item = new MenuItem { Header = "Change Traits..." };
                 item.Click += ChangeTraitsSelected;
                 item.IsEnabled = Strings.SelectedItems.Count > 0;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 yield return new Separator();
                 item = new MenuItem { Header = "Terms Glossary" };
+                item.FontSize = FontSizeValue;
                 if (selectedItem != null &&
                     Glossary.Instance.TryGetTermsInStringEntry(selectedItem, out var termEntries))
                 {
@@ -473,8 +493,10 @@ namespace LocalizationTracker.Windows
                 item = new MenuItem { Header = "Delete" };
                 item.Click += DeleteStringsSelected;
                 item.IsEnabled = Strings.SelectedItems.Count > 0;
+                item.FontSize = FontSizeValue;
                 yield return item;
             }
+
         }
 
         private void ApplyInlineRemove(StringEntry item, int index, InlineTemplate diffInline)
@@ -524,6 +546,7 @@ namespace LocalizationTracker.Windows
             {
                 var item = new MenuItem { Header = "Rescan Strings" };
                 item.Click += RescanStrings;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 yield return new Separator();
@@ -531,15 +554,24 @@ namespace LocalizationTracker.Windows
                 item = new MenuItem { Header = "Export..." };
                 item.Click += ExportAll;
                 item.IsEnabled = Strings.Items.Count > 0;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 item = new MenuItem { Header = "Import..." };
                 item.Click += Import;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 item = new MenuItem { Header = "Export wordcount" };
                 item.Click += ExportWordcount;
                 item.IsEnabled = Strings.Items.Count > 0;
+                item.FontSize = FontSizeValue;
+                yield return item;
+
+                item = new MenuItem { Header = "Generate SVG" };
+                item.Click += SaveAllDialogsIntoSvg;
+                item.IsEnabled = Strings.Items.Count > 0;
+                item.FontSize = FontSizeValue;
                 yield return item;
 
                 yield return new Separator();
@@ -548,6 +580,7 @@ namespace LocalizationTracker.Windows
                 {
                     item = new MenuItem { Header = "Last Import Results" };
                     item.Click += ShowImportResults;
+                    item.FontSize = FontSizeValue;
                     yield return item;
                 }
 
@@ -555,14 +588,16 @@ namespace LocalizationTracker.Windows
                 {
                     item = new MenuItem { Header = "Last Export Results" };
                     item.Click += ShowExportResults;
+                    item.FontSize = FontSizeValue;
                     yield return item;
                 }
 
                 yield return new Separator();
 
-                if (AppConfig.Instance.Engine == AppConfig.EngineType.Unreal)
+                if (AppConfig.Instance.Engine == StringManager.EngineType.Unreal)
                 {
                     item = new MenuItem { Header = "Remove unused" };
+                    item.FontSize = FontSizeValue;
                     item.Click += RemoveUnusedStringsFolder;
                     yield return item;
                 }
@@ -570,10 +605,12 @@ namespace LocalizationTracker.Windows
                 if (StringEntry.SourceLocale != Locale.TranslationSource && AppConfig.Instance.DeepLAvailable)
                 {
                     item = new MenuItem { Header = "DeepL translate" };
+                    item.FontSize = FontSizeValue;
                     item.Click += DeepLTranslateFolder;
                     yield return item;
 
                     item = new MenuItem { Header = "DeepL translate comments" };
+                    item.FontSize = FontSizeValue;
                     item.Click += DeepLTranslateCommentsFolder;
                     yield return item;
 
@@ -583,12 +620,14 @@ namespace LocalizationTracker.Windows
                 if (StringEntry.SourceLocale == Locale.TranslationSource)
                 {
                     item = new MenuItem { Header = "Update Translation Source" };
+                    item.FontSize = FontSizeValue;
                     item.Click += UpdateTranslationSourceAll;
                     item.IsEnabled = Strings.Items.Count > 0;
                     yield return item;
                 }
 
                 item = new MenuItem { Header = "Change Traits..." };
+                item.FontSize = FontSizeValue;
                 item.Click += ChangeTraitsAll;
                 item.IsEnabled = Strings.Items.Count > 0;
                 yield return item;
@@ -664,7 +703,7 @@ namespace LocalizationTracker.Windows
                     ScanningLabel.Content = $"Translating {count}/{strings.Count}";
                     UpdateFilter();
                 });
-                await TranslateUtility.Translate(strings, m_Translator, AppConfig.Instance.AddAIGeneratedTag, AppConfig.Instance.Engine, progress);
+                await TranslateUtility.Translate(strings, m_Translator, AppConfig.Instance.AddForRetranslationTag, AppConfig.Instance.Engine, progress);
 
                 ScanningLabel.Content = "Scanning...";
                 ScanningLabel.Visibility = Visibility.Hidden;
@@ -687,7 +726,7 @@ namespace LocalizationTracker.Windows
                     ScanningLabel.Content = $"Translating {count}/{strings.Count}";
                     UpdateFilter();
                 });
-                await TranslateUtility.TranslateComment(strings, m_Translator, progress);
+                await TranslateUtility.TranslateComment(strings, m_Translator, progress, Filter.Mode);
 
                 ScanningLabel.Content = "Scanning...";
                 ScanningLabel.Visibility = Visibility.Hidden;
@@ -705,14 +744,14 @@ namespace LocalizationTracker.Windows
 
             if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                StringManager.Filter.SelectedColor = System.Windows.Media.Color.FromArgb(colorDialog.Color.A, colorDialog.Color.R, colorDialog.Color.G, colorDialog.Color.B);
+                StringsFilter.Filter.SelectedColor = System.Windows.Media.Color.FromArgb(colorDialog.Color.A, colorDialog.Color.R, colorDialog.Color.G, colorDialog.Color.B);
                 SaveFilterColor();
                 Settings.Default.Save();
             }
         }
         private void SetDefaultColor_Click(object sender, RoutedEventArgs e)
         {
-            StringManager.Filter.SelectedColor = Brushes.LightBlue.Color;
+            StringsFilter.Filter.SelectedColor = Brushes.LightBlue.Color;
             SaveFilterColor();
             Settings.Default.Save();
         }
@@ -730,10 +769,12 @@ namespace LocalizationTracker.Windows
             => AppConfig.Instance.ModdersVersion ? Visibility.Collapsed : ShowOnUnrealOnly;
 
         public Visibility ShowOnUnityOnly
-            => AppConfig.Instance.Engine == AppConfig.EngineType.Unity ? Visibility.Visible : Visibility.Collapsed;
+            => AppConfig.Instance.Engine == StringManager.EngineType.Unity ? Visibility.Visible : Visibility.Collapsed;
 
         public Visibility ShowOnUnrealOnly
-            => AppConfig.Instance.Engine == AppConfig.EngineType.Unreal ? Visibility.Visible : Visibility.Collapsed;
+            => AppConfig.Instance.Engine == StringManager.EngineType.Unreal ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility ShowOnPathfinderOnly
+            => AppConfig.Instance.Project == "Pathfinder: WotR" ? Visibility.Visible : Visibility.Collapsed;
 
 
         void ExportWordcount(object sender, RoutedEventArgs e)
@@ -804,7 +845,7 @@ namespace LocalizationTracker.Windows
             if (File.Exists(fullPath))
             {
                 ProcessStartInfo pi = new ProcessStartInfo();
-                pi.WorkingDirectory = AppConfig.Instance.AbsStringsFolder;
+                pi.WorkingDirectory = "../Localization";
                 pi.FileName = fileName;
                 Process.Start(pi);
             }
@@ -813,8 +854,6 @@ namespace LocalizationTracker.Windows
                 MessageBox.Show($"{fileName} not found in the current directory.");
             }
         }
-
-
 
         private CancellationTokenSource m_RescanCts = new();
         private Task m_RescanTask = Task.CompletedTask;
@@ -826,6 +865,7 @@ namespace LocalizationTracker.Windows
             var ct = m_RescanCts.Token;
             m_RescanTask = Scan(m_RescanTask, ct);
         }
+
 
         private async Task Scan(Task prevTask, CancellationToken ct)
         {
@@ -841,20 +881,28 @@ namespace LocalizationTracker.Windows
             ScanningLabel.Visibility = Visibility.Visible;
 
             var rootDir = new DirectoryInfo(AppConfig.Instance.StringsFolder);
+            DirectoryInfo? dialogsDir = null;
+            if (!string.IsNullOrEmpty(AppConfig.Instance.DialogsFolder))
+            {
+                dialogsDir = new DirectoryInfo(AppConfig.Instance.DialogsFolder);
+            }
             try
             {
-                var newStrings = await Task.Run(() => ScanImpl(rootDir, StringManager.AllStrings, ct), ct);
-                ct.ThrowIfCancellationRequested();
+                await Task.Run(() => StringManager.Scan(rootDir, ct, dialogsDir), ct);
 
-                StringManager.SetNewStrings(newStrings);
+                ct.ThrowIfCancellationRequested();
 
                 var selectedFolders = Folders.SelectedItems
                     .Cast<FolderItemTreeModel>()
                     .Select(v => (v.Folder, v.IsRootFolderItem))
                     .ToImmutableHashSet();
+
                 UpdateFolderSource(rootDir, selectedFolders);
 
                 UpdateFilter();
+
+                scanCompletionSource.SetResult(true);
+
             }
             catch (OperationCanceledException)
             {
@@ -863,47 +911,32 @@ namespace LocalizationTracker.Windows
             {
                 var messages = string.Join("\n", ex.InnerExceptions.Select(e => e.Message));
                 ex.ShowMessageBox(messages, "Failed to scan strings");
+                scanCompletionSource.SetResult(false);
             }
             catch (Exception ex)
             {
                 ex.ShowMessageBox(ex.Message, "Failed to scan strings");
+                scanCompletionSource.SetException(ex);
             }
 
             ScanningLabel.Visibility = Visibility.Hidden;
+            scanCompletionSource = new TaskCompletionSource<bool>();
         }
 
-        private async Task<StringManager.StringData> ScanImpl(
-            DirectoryInfo rootDir, StringEntry[] allStrings, CancellationToken ct)
+
+        public async void SaveAllDialogsIntoSvg(object sender, RoutedEventArgs e)
         {
-            var existingUnmodifiedTask = Task.Run(
-                () => allStrings.AsParallel().WithCancellation(ct).Where(v => !v.IsFileModified()).ToArray(),
-                ct);
+            var selectedStrings = Strings.Items.OfType<StringEntry>().ToArray();
 
-            var existingUnmodified = await existingUnmodifiedTask;
-            var strings = StringManager.Archive.LoadAll(rootDir, existingUnmodified, ct);
+            var selectedDialog = selectedStrings.Where(w => w.DialogsDataList != null && w.DialogsDataList.Any()).Select(s => s.DialogsDataList.First()).Distinct();
 
+            foreach (var dialog in selectedDialog)
+            {
+                await Task.Run(() => GenerateSVG.FindAllDialogues(dialog.Name));
+            }
 
-            // now files = ExistingModified + New
-            Glossary.Instance.RecalculateTerms();
-            var newLoadedEntries = strings
-                .AsParallel()
-                .WithCancellation(ct)
-                .Select(
-                    sd =>
-                    {
-                        var se = new StringEntry(sd);
-                        se.UpdateLocaleEntries();
-                        return se;
-                    });
+            MessageBox.Show("Generation complete!", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
 
-            var newStrings = existingUnmodified
-                .AsParallel()
-                .Concat(newLoadedEntries)
-                .OrderBy(se => se)
-                .ToArray();
-
-            var stringData = StringManager.PrepareAdditionalStringData(newStrings);
-            return stringData;
         }
 
         private void UpdateFilterMode()
@@ -912,6 +945,24 @@ namespace LocalizationTracker.Windows
                 Filter.Mode == FilterMode.Updated_Trait
                     ? Visibility.Visible
                     : Visibility.Collapsed;
+
+            var voiceCommentSource = Strings.Columns[8];
+            var voiceCommentTarget = Strings.Columns[9];
+            var commentSource = Strings.Columns[6];
+            var commentTarget = Strings.Columns[7];
+            var sourceTextVoiceColumn = Strings.Columns[10];
+            var targetTextVoiceColumn = Strings.Columns[11];
+            var sourceText = Strings.Columns[4];
+            var targetText = Strings.Columns[5];
+
+            commentSource.Visibility = Visibility.Visible;
+            commentTarget.Visibility = Visibility.Visible;
+            voiceCommentSource.Visibility = Visibility.Collapsed;
+            voiceCommentTarget.Visibility = Visibility.Collapsed;
+            sourceTextVoiceColumn.Visibility = Visibility.Collapsed;
+            targetTextVoiceColumn.Visibility = Visibility.Collapsed;
+            sourceText.Visibility = Visibility.Visible;
+            targetText.Visibility = Visibility.Visible;
 
             var targetColumn = Strings.Columns[5];
             targetColumn.Visibility =
@@ -926,6 +977,18 @@ namespace LocalizationTracker.Windows
                 keyColumn.Visibility = Visibility.Visible;
                 keyColumn.SortDirection = ListSortDirection.Ascending;
             }
+            else if (Filter.Mode == FilterMode.Voice_Comments)
+            {
+                keyColumn.Visibility = Visibility.Visible;
+                voiceCommentSource.Visibility = Visibility.Visible;
+                voiceCommentTarget.Visibility = Visibility.Visible;
+                commentSource.Visibility = Visibility.Collapsed;
+                commentTarget.Visibility = Visibility.Collapsed;
+                sourceTextVoiceColumn.Visibility = Visibility.Visible;
+                targetTextVoiceColumn.Visibility = Visibility.Visible;
+                sourceText.Visibility = Visibility.Collapsed;
+                targetText.Visibility = Visibility.Collapsed;
+            }
             else
             {
                 keyColumn.Visibility = Visibility.Collapsed;
@@ -936,36 +999,33 @@ namespace LocalizationTracker.Windows
         private Task s_LastUpdateTask = Task.CompletedTask;
         private CancellationTokenSource s_cts = new CancellationTokenSource();
 
-        private void UpdateFilter(bool updateInlines = false)
+        private async Task UpdateFilter(bool updateInlines = false)
         {
+            StringEntry[] filtered;
             var locale = SourceLocale;
-            var filtered = StringManager.AllStrings
-                .AsParallel()
-                .Where(Filter.Fits)
-                .ToArray();
+
+            Filter.Update();
 
             if (updateInlines)
             {
                 Parallel.ForEach(
-                    filtered,
+                    StringsFilter.FilteredStrings,
                     entry =>
                     {
                         entry.UpdateInlines();
                     });
             }
 
-            StringManager.SetFilteredStrings(filtered);
-
             if (!string.IsNullOrEmpty(Filter.NameMultiline))
-                Filter.CheckMultilineSearch(filtered);
+                Filter.CheckMultilineSearch(StringsFilter.FilteredStrings);
             else
                 Filter.NotFound = "";
 
-            UpdateStringsCount(filtered, null, 0, filtered.Length, FoldersSource);
+            UpdateStringsCount(StringsFilter.FilteredStrings, null, 0, StringsFilter.FilteredStrings.Length, FoldersSource);
             UpdateStringsView();
 
             if (WordCueCount)
-                UpdateCounts(filtered, locale);
+                UpdateCounts(StringsFilter.FilteredStrings, locale);
         }
 
         private void UpdateCounts(StringEntry[] sortedPaths, Locale locale)
@@ -1014,6 +1074,8 @@ namespace LocalizationTracker.Windows
         private void UpdateStringsCount(
             StringEntry[] sortedStringPaths, int[]? wordCount, int _start, int _count, IEnumerable items)
         {
+
+
             int lastIndex = _start;
             foreach (var item in items.Cast<FolderItemTreeModel>())
             {
@@ -1055,7 +1117,8 @@ namespace LocalizationTracker.Windows
         }
 
         private void UpdateFolderSource(
-            DirectoryInfo rootDir, IReadOnlySet<(string FullName, bool IsRootFolderItem)> selectedFolders)
+            DirectoryInfo rootDir,
+            IReadOnlySet<(string FullName, bool IsRootFolderItem)> selectedFolders)
         {
             FoldersSource.Clear();
             var stack = new Stack<(FolderItemTreeModel, int)>();
@@ -1244,18 +1307,18 @@ namespace LocalizationTracker.Windows
             {
                 Comparison<StringEntry, string> comparison =
                     item.IsRootFolderItem ? StringEntryComparison.Exact : StringEntryComparison.LimitLen;
-                int firstIndex = StringManager.FilteredStrings.LowerBound(
+                int firstIndex = StringsFilter.FilteredStrings.LowerBound(
                     lastIndex,
-                    StringManager.FilteredStrings.Length - lastIndex,
+                    StringsFilter.FilteredStrings.Length - lastIndex,
                     item.Folder,
                     comparison);
-                lastIndex = StringManager.FilteredStrings.UpperBound(
+                lastIndex = StringsFilter.FilteredStrings.UpperBound(
                     firstIndex,
-                    StringManager.FilteredStrings.Length - firstIndex,
+                    StringsFilter.FilteredStrings.Length - firstIndex,
                     item.Folder,
                     comparison);
 
-                var newEntries = StringManager.FilteredStrings.AsMemory()[firstIndex..lastIndex];
+                var newEntries = StringsFilter.FilteredStrings.AsMemory()[firstIndex..lastIndex];
                 foreach (var se in newEntries.Span)
                     se.ClearRelativePath();
 
@@ -1338,6 +1401,7 @@ namespace LocalizationTracker.Windows
                                 {
                                     item.Data.AddTrait(dialog.Locale, t);
                                 }
+
                             }
                             else
                             {
@@ -1351,6 +1415,33 @@ namespace LocalizationTracker.Windows
                                 }
                             }
                         }
+
+
+                        var locales = item.Data.Languages.SelectMany(w => w.Traits);
+                        var stringTraits = item.Data.StringTraits;
+
+                        //if (!string.IsNullOrEmpty(item.Speaker))
+                        //{
+
+                        //    foreach (var i in stringTraits)                //оставлю, если надо будет все трейты заполнять снова
+                        //    {
+                        //        if (string.IsNullOrEmpty(i.Speaker))
+                        //            i.Speaker = item.Speaker;
+
+                        //        if (string.IsNullOrEmpty(i.SpeakerGender))
+                        //            i.SpeakerGender = item.Data.SpeakerGender;
+                        //    }
+
+                        //    foreach (var i in locales)
+                        //    {
+                        //        if (string.IsNullOrEmpty(i.Speaker))
+                        //            i.Speaker = item.Speaker;
+
+                        //        if (string.IsNullOrEmpty(i.SpeakerGender))
+                        //            i.SpeakerGender = item.Data.SpeakerGender;
+                        //    }
+
+                        //}
 
                         item.Save();
                     }
@@ -1621,7 +1712,7 @@ namespace LocalizationTracker.Windows
                 var selected = Strings.SelectedItems.OfType<StringEntry>().ToList();
                 if (selected.Count == 1)
                 {
-                    var targets = StringManager.FilteredStrings
+                    var targets = StringsFilter.FilteredStrings
                         .Where(se => se.Key == selected[0].Key)
                         .Where(se => se != selected[0])
                         .ToList();
@@ -1654,6 +1745,23 @@ namespace LocalizationTracker.Windows
             m_MultilineSearchWindow.WindowClosed += MultilineSearchWindowClosed;
         }
 
+        private void UpdatedSpeakersWindow_Click(object sender, RoutedEventArgs e)
+        {
+            if (m_SpeakerChangedWindow == null || m_SpeakerChangedWindow.IsClosed)
+            {
+                m_SpeakerChangedWindow = new SpeakerChangedWindow(StringManager.AllStrings);
+                m_SpeakerChangedWindow.Width = 745;
+                m_SpeakerChangedWindow.Height = 600;
+                m_SpeakerChangedWindow.Show();
+            }
+            else
+            {
+                m_SpeakerChangedWindow.Show();
+                m_SpeakerChangedWindow.Focus();
+            }
+
+        }
+
         private void MultilineSearchWindowClosed(object sender, EventArgs e)
         {
             UpdateFilter(true);
@@ -1668,5 +1776,68 @@ namespace LocalizationTracker.Windows
         {
             UpdateFilter(true);
         }
+
+        private void OpenFileFromDirectory(object sender, RoutedEventArgs e)
+        {
+            var selectedStrings = Strings.SelectedItems.OfType<StringEntry>().ToArray();
+            List<string> paths = selectedStrings.Select(s => s.AbsolutePath).ToList();
+
+            foreach (var path in paths)
+            {
+                try
+                {
+                    if (!File.Exists(path))
+                    {
+                        MessageBox.Show($"Файл не найден: {path}");
+                        continue;
+                    }
+
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = path,
+                        UseShellExecute = true
+                    };
+
+                    Process.Start(processInfo);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка открытия файла: {ex.Message}");
+                }
+            }
+        }
+        private void OpenFileDirectories(object sender, RoutedEventArgs e)
+        {
+            var selectedStrings = Strings.SelectedItems.OfType<StringEntry>().ToArray();
+            List<string> paths = selectedStrings.Select(s => s.AbsolutePath).ToList();
+
+            try
+            {
+                var uniqueDirectories = paths
+                    .Where(File.Exists)
+                    .Select(Path.GetDirectoryName)
+                    .Where(dir => dir != null && Directory.Exists(dir))
+                    .Distinct()
+                    .ToList();
+
+                foreach (var directory in uniqueDirectories)
+                {
+                    var processInfo = new ProcessStartInfo
+                    {
+                        FileName = directory,
+                        UseShellExecute = true
+                    };
+
+                    Process.Start(processInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка открытия папок: {ex.Message}");
+            }
+        }
+
+
+
     }
 }

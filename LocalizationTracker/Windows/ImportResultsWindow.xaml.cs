@@ -1,5 +1,4 @@
-﻿using Kingmaker.Localization.Shared;
-using LocalizationTracker.Data;
+﻿using LocalizationTracker.Data;
 using LocalizationTracker.Logic;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -81,13 +80,13 @@ namespace LocalizationTracker.Windows
         {
             var lang = LangGroupSelector.Items[LangGroupSelector.SelectedIndex] as string;
             if (_result.ImportResults.TryGetValue(lang, out var result))
-                LocalizationDiffExporter.SaveResultAsFile(result);
+                ImportDiffExporter.SaveResultAsFile(result);
         }
 
         private void SaveAllButton_Click(object sender, RoutedEventArgs e)
         {
             var results = _result.ImportResults.Values.ToList();
-            LocalizationDiffExporter.SaveResultsAsFile(results);
+            ImportDiffExporter.SaveResultsAsFile(results);
         }
 
         #endregion XamlMethods
@@ -119,13 +118,13 @@ namespace LocalizationTracker.Windows
                 }
             }
 
-            StringManager.Filter.NameMultiline = stringBuilder.ToString();
+            StringsFilter.Filter.NameMultiline = stringBuilder.ToString();
 
             var findLocale = langs.Split(":");
             StringEntry.SourceLocale = new Locale(findLocale[0]);
             StringEntry.TargetLocale = new Locale(findLocale[1]);
 
-            StringManager.Filter.ForceUpdateFilter();
+            StringsFilter.Filter.ForceUpdateFilter();
         }
 
         #endregion ImportResultsWindow

@@ -1,6 +1,5 @@
-﻿using Kingmaker.Localization.Shared;
+﻿using StringsCollector.Data;
 using LocalizationTracker.Data;
-using LocalizationTracker.Data.Wrappers;
 using LocalizationTracker.Windows;
 using System;
 using System.Collections.Generic;

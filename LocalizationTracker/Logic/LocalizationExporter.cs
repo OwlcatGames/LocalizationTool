@@ -1,10 +1,10 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Spreadsheet;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 using LocalizationTracker.Excel;
 using LocalizationTracker.Logic.Excel;
+using LocalizationTracker.Logic.Excel.Exporters;
 using LocalizationTracker.Logic.Excel.Wrappers;
 using LocalizationTracker.OpenOffice;
 using LocalizationTracker.Utility;
@@ -24,9 +24,11 @@ namespace LocalizationTracker
         private static readonly Dictionary<ExportTarget, IExporter> _exporters = new()
         {
             [ExportTarget.LocalizationToExcel] = new ExcelLocalizationExporter(),
-            [ExportTarget.StringDiffToExcel] = new ExcelSourceUpdateExporter(),
-            [ExportTarget.LocalozationToOpenOffice] = new OpenOfficeExporter(),
-            [ExportTarget.SpeakersStrings] = new SpeakersExport()
+            [ExportTarget.StringDiffToExcel] = new ExcelSourceUpdateExporter(new ExcelStyles()),
+            [ExportTarget.TagsMismatchToExcel] = new ExcelTagsMismathExporter(new ExcelTagMismatchStyle()),
+            [ExportTarget.LocalizationToOpenOffice] = new OpenOfficeExporter(),
+            [ExportTarget.SpeakersStrings] = new SpeakersExport(),
+            [ExportTarget.VoiceComments] = new VoiceCommentsExport()
         };
 
 
@@ -115,6 +117,9 @@ namespace LocalizationTracker
 
             var fileName = $"{selectedDirName}_{param.Source}_{string.Join(",", param.Target)}";
 
+            if (param.ExportTarget == ExportTarget.VoiceComments)
+                fileName = $"{fileName}_comments";
+
             if (param.Traits.Length > 0)
             {
                 var traits = string.Join("_", param.Traits);
@@ -155,14 +160,14 @@ namespace LocalizationTracker
         {
             string path = string.Empty;
 
-            var fileDialog = new System.Windows.Forms.FolderBrowserDialog()
+            var fileDialog = new FolderBrowserDialog()
             {
                 SelectedPath = rootPath
             };
 
             using (fileDialog)
             {
-                path = fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK ? fileDialog.SelectedPath : string.Empty;
+                path = fileDialog.ShowDialog() == DialogResult.OK ? fileDialog.SelectedPath : string.Empty;
             }
 
             return path;
@@ -201,9 +206,11 @@ namespace LocalizationTracker
     public enum ExportTarget
     {
         LocalizationToExcel,
-        LocalozationToOpenOffice,
+        LocalizationToOpenOffice,
         StringDiffToExcel,
-        SpeakersStrings
+        TagsMismatchToExcel,
+        SpeakersStrings,
+        VoiceComments
     }
 
     public enum TagRemovalPolicy

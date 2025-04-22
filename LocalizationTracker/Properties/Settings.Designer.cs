@@ -330,6 +330,21 @@ namespace LocalizationTracker.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ImportGuid
+        {
+            get
+            {
+                return ((string)(this["ImportGuid"]));
+            }
+            set
+            {
+                this["ImportGuid"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("template.ods")]
         public string OpenOfficeTemplate {
             get {

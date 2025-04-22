@@ -5,6 +5,7 @@ using System.Windows.Media;
 using JetBrains.Annotations;
 using LocalizationTracker.Components;
 using LocalizationTracker.Logic;
+using LocalizationTracker.Windows;
 
 namespace LocalizationTracker.Tools;
 
@@ -18,13 +19,13 @@ public class FilterFits
 
     public static InlinesWrapper MakeInlines(InlineTemplate[] inlineTemplates, Color? selectedColor = null)
     {
-        if (string.IsNullOrWhiteSpace(StringManager.Filter.Text)) return new InlinesWrapper(inlineTemplates);
+        if (string.IsNullOrWhiteSpace(StringsFilter.Filter.Text)) return new InlinesWrapper(inlineTemplates);
 
         var result = new List<InlineTemplate>();
 
-        var searchText = StringManager.Filter.Text;
+        var searchText = StringsFilter.Filter.Text;
 
-        if (StringManager.Filter.IgnoreCase == true)
+        if (StringsFilter.Filter.IgnoreCase == true)
         {
             searchText = searchText.ToLower();
         }
@@ -35,9 +36,9 @@ public class FilterFits
 
         foreach (var i in inlineTemplates)
         {
-            if (string.IsNullOrWhiteSpace(StringManager.Filter.Text)) searchText = "";
+            if (string.IsNullOrWhiteSpace(StringsFilter.Filter.Text)) searchText = "";
 
-            var text = StringManager.Filter.IgnoreCase == true ? i.Text.ToLower() : i.Text;
+            var text = StringsFilter.Filter.IgnoreCase == true ? i.Text.ToLower() : i.Text;
             var foregroundColor = i.Foreground;
             Color? backgroundColor = i.Background;
             bool strikeThrough = i.StrikeThrough;

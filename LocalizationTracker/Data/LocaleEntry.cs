@@ -1,23 +1,21 @@
 ﻿using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
-using LocalizationTracker.Data.Wrappers;
 using LocalizationTracker.Logic;
 using LocalizationTracker.Tools;
 using LocalizationTracker.Utility;
 using LocalizationTracker.Windows;
-using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Documents;
 using System.Windows.Media;
 using LocalizationTracker.Tools.GlossaryTools;
 using System.ComponentModel;
-using DocumentFormat.OpenXml.Drawing;
-using static LocalizationTracker.Data.Unreal.UnrealStringData;
-using System.Reflection.Metadata;
-using LocalizationTracker.Data.Unreal;
+using StringsCollector.Data.Unreal;
+using StringsCollector.Data;
+using static StringsCollector.Data.Unreal.UnrealStringData;
+using System.Text.Json;
+using System.IO;
+using System.Windows;
 
 namespace LocalizationTracker.Data
 {
@@ -37,6 +35,7 @@ namespace LocalizationTracker.Data
         private readonly StringEntry m_String;
 
         public string StringKey => m_String.Key;
+
         public UnrealTraitData extraSymbols = new UnrealTraitData("ExtraSymbols");
 
 
@@ -68,7 +67,8 @@ namespace LocalizationTracker.Data
                 if (m_Empty)
                     return "";
 
-                return m_String.Data.GetText(m_Locale);
+                var text = m_String.Data.GetText(m_Locale);
+                return text;
             }
             set
             {
@@ -87,9 +87,10 @@ namespace LocalizationTracker.Data
                 SymbolsCount = Text.Length;
                 //Glossary.Instance.AnalyzeLocaleEntryForTerms(this);
 
-                if (StringManager.Filter.Mode == FilterMode.Tags_Mismatch)
+                if (StringsFilter.Filter.Mode == FilterMode.Tags_Mismatch)
                 {
                     // rerun comparison immediately if we're comparing tags
+
                     TagsList.Compare(m_String.SourceLocaleEntry.TagsList, m_String.TargetLocaleEntry.TagsList);
                     m_String.UpdateInlines();
                 }
@@ -178,7 +179,7 @@ namespace LocalizationTracker.Data
         public string TextWithoutTags(string[] tagsToRemove) => StringUtils.RemoveTags(m_String.Data.GetText(m_Locale), tagsToRemove);
         public string TextWithoutEncyclopediaTags => TextWithoutTags(LocalizationExporter.TagsEncyclopedia);
 
-        public string CurrentlyVisibleText => StringManager.Filter.HideTags
+        public string CurrentlyVisibleText => StringsFilter.Filter.HideTags
             ? TextWithoutEncyclopediaTags
             : Text;
 
@@ -201,6 +202,92 @@ namespace LocalizationTracker.Data
                 localeData.TranslatedComment = value;
 
                 m_String.Save();
+            }
+        }
+
+        public string VoiceComment
+        {
+            get
+            {
+                if (m_Empty)
+                    return "";
+                return m_String.Data.GetLocale(Locale)?.VoiceComment ?? "";
+            }
+            set
+            {
+                if (m_Empty)
+                    return;
+                OnPropertyChanged(nameof(VoiceComment));
+
+                if (m_String.Data.GetLocale(Locale)?.VoiceComment != value)
+                {
+                    if (m_String.Data.GetLocale(Locale)?.Text != "Dialog comment")
+                    {
+                        m_String.Reload();
+                        var localeData = m_String.Data.EnsureLocale(Locale);
+                        localeData.VoiceComment = value;
+                        m_String.Save();
+                    }
+                    else
+                    {
+                        var localeData = m_String.Data.EnsureLocale(Locale);
+                        UpdateVoiceComment(m_String.DialogsDataList.First(), value);
+                        localeData.VoiceComment = value;
+                    }
+                }
+            }
+        }
+
+        private void UpdateVoiceComment(DialogsData? dialogsData, string value)
+        {
+            if (dialogsData == null)
+                return;
+
+            dialogsData.Nodes
+                .First(n => n.Kind == "root")
+                .VOComment[Locale] = value;
+
+            var bpPath = Path.Combine(AppConfig.Instance.AbsBlueprintsFolder,
+                Path.GetRelativePath(AppConfig.Instance.DialogsFolder, dialogsData.FileSource)).Replace(".json", ".jbp");
+
+            bpPath = Path.Combine(Path.GetDirectoryName(bpPath), $"{dialogsData.Name}.jbp");
+
+            if (File.Exists(bpPath))
+            {
+                try
+                {
+                    string bpContent = File.ReadAllText(bpPath);
+                    var blueprintData = JsonSerializer.Deserialize<BlueprintDialogRoot>(bpContent, JsonSerializerHelpers.JsonSerializerOptions);
+
+                    if (blueprintData != null)
+                    {
+
+                            if (blueprintData.Data.VoComments != null)
+                            {
+                                blueprintData.Data.VoComments[Locale] = value;
+                            }
+                            string updatedBpContent = JsonSerializer.Serialize(blueprintData, JsonSerializerHelpers.JsonSerializerOptions);
+                            File.WriteAllText(bpPath, updatedBpContent);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Error: Could not deserialize blueprint: {bpPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error updating blueprint {bpPath}: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show($"Warning: Blueprint file not found: {bpPath} for dialog: {dialogsData.FileSource}");
+            }
+
+            if (!string.IsNullOrEmpty(dialogsData.FileSource))
+            {
+                string jsonString = JsonSerializer.Serialize(dialogsData, JsonSerializerHelpers.JsonSerializerOptions);
+                File.WriteAllText(dialogsData.FileSource, jsonString);
             }
         }
 
@@ -229,7 +316,7 @@ namespace LocalizationTracker.Data
                 var localeData = m_String.Data.GetLocale(Translation.m_Locale);
                 if (localeData == null)
                     return false;
-                return localeData.OriginalText != Text;
+                return localeData.OriginalText.Replace("\r", "").Replace("\n", "").Trim() != Text.Replace("\r", "").Replace("\n", "").Trim();
             }
         }
 
@@ -265,78 +352,81 @@ namespace LocalizationTracker.Data
 
         public void UpdateInlines()
         {
-            m_InlinesCollection.Clear();
+            Dictionary<InlineCollectionType, InlinesWrapper> inlinesCollection = new();
+
+            inlinesCollection.Add(InlineCollectionType.Default, new InlinesWrapper());
+            Inlines = inlinesCollection[InlineCollectionType.Default];
 
             if (m_Empty)
                 return;
 
-            var targetText = StringManager.Filter.HideTags ? TextWithoutEncyclopediaTags : Text;
+            var targetText = StringsFilter.Filter.HideTags ? TextWithoutEncyclopediaTags : Text;
 
             if (string.IsNullOrEmpty(targetText))
                 return;
 
-            ApplyMode(targetText);
-            ApplyGlossary(targetText);
-            ApplyMaxSymbols();
-            ApplyFilter(targetText);
+            ApplyMode(targetText, inlinesCollection);
+            ApplyGlossary(targetText, inlinesCollection);
+            ApplyMaxSymbols(inlinesCollection);
+            ApplyFilter(targetText, inlinesCollection);
         }
 
-        public void ApplyMode(string targetText)
+        public void ApplyMode(string targetText, Dictionary<InlineCollectionType, InlinesWrapper> inlinesCollection)
         {
-            if (StringManager.Filter.Mode == FilterMode.Updated_Trait && !string.IsNullOrEmpty(MismatchedTraitString))
+            if (StringsFilter.Filter.Mode == FilterMode.Updated_Trait && !string.IsNullOrEmpty(MismatchedTraitString))
             {
-                m_InlinesCollection[InlineCollectionType.DiffTrait] = Diff.MakeInlines(MismatchedTraitString, targetText);
-                Inlines = m_InlinesCollection[InlineCollectionType.DiffTrait];
+                inlinesCollection[InlineCollectionType.DiffTrait] = Diff.MakeInlines(MismatchedTraitString, targetText);
+                Inlines = inlinesCollection[InlineCollectionType.DiffTrait];
             }
-            else if (StringManager.Filter.Mode == FilterMode.Tags_Mismatch)
+            else if (StringsFilter.Filter.Mode == FilterMode.Tags_Mismatch)
             {
-                m_InlinesCollection[InlineCollectionType.TagsMismatch] = TagsList.MakeInlines(targetText);
-                Inlines = m_InlinesCollection[InlineCollectionType.TagsMismatch];
+                inlinesCollection[InlineCollectionType.TagsMismatch] = TagsList.MakeInlines(targetText);
+                Inlines = inlinesCollection[InlineCollectionType.TagsMismatch];
             }
             else
             {
                 if (Translation == null)
                 {
-                    m_InlinesCollection[InlineCollectionType.SpellCheck] = SpellCheck.MakeInlines(m_Locale, targetText);
-                    Inlines = m_InlinesCollection[InlineCollectionType.SpellCheck];
+                    inlinesCollection[InlineCollectionType.SpellCheck] = SpellCheck.MakeInlines(m_Locale, targetText);
+                    Inlines = inlinesCollection[InlineCollectionType.SpellCheck];
                 }
                 else
                 {
                     var localeData = m_String.Data.GetLocale(Translation.m_Locale);
                     if (localeData == null)
                     {
-                        m_InlinesCollection[InlineCollectionType.Default] = new InlinesWrapper(targetText);
-                        Inlines = m_InlinesCollection[InlineCollectionType.Default];
+                        inlinesCollection[InlineCollectionType.Default] = new InlinesWrapper(targetText);
+                        Inlines = inlinesCollection[InlineCollectionType.Default];
                     }
                     else
                     {
-                        m_InlinesCollection[InlineCollectionType.DiffSource] = Diff.MakeInlines(localeData.OriginalText, Text);
-                        if (StringManager.Filter.HideTags)
+                        inlinesCollection[InlineCollectionType.DiffSource] = Diff.MakeInlines(localeData.OriginalText, Text);
+                        if (StringsFilter.Filter.HideTags)
                         {
-                            string originalText = StringManager.Filter.HideTags ?
+                            string originalText = StringsFilter.Filter.HideTags ?
                                 StringUtils.RemoveTags(localeData.OriginalText, LocalizationExporter.TagsEncyclopedia) :
                                 localeData.OriginalText;
 
-                            m_InlinesCollection[InlineCollectionType.DiffSourceNoTags] = Diff.MakeInlines(originalText, targetText);
+                            inlinesCollection[InlineCollectionType.DiffSourceNoTags] = Diff.MakeInlines(originalText, targetText);
                         }
 
-                        Inlines = StringManager.Filter.HideTags
-                            ? m_InlinesCollection[InlineCollectionType.DiffSourceNoTags]
-                            : m_InlinesCollection[InlineCollectionType.DiffSource];
+                        Inlines = StringsFilter.Filter.HideTags
+                            ? inlinesCollection[InlineCollectionType.DiffSourceNoTags]
+                            : inlinesCollection[InlineCollectionType.DiffSource];
                     }
                 }
             }
         }
 
-        public void ApplyGlossary(string targetText)
+        public void ApplyGlossary(string targetText, Dictionary<InlineCollectionType, InlinesWrapper> inlinesCollection)
         {
             if (string.IsNullOrEmpty(targetText))
                 return;
 
             try
             {
-                m_InlinesCollection[InlineCollectionType.Glossary] = Glossary.Instance.MakeInlines(targetText, this);
-                Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.Glossary]);
+                inlinesCollection[InlineCollectionType.Glossary] = Glossary.Instance.MakeInlines(targetText, this);
+                Inlines = Inlines.MergeWith(inlinesCollection[InlineCollectionType.Glossary]);
             }
             catch (Exception e)
             {
@@ -344,7 +434,7 @@ namespace LocalizationTracker.Data
             }
         }
 
-        public void ApplyMaxSymbols()
+        public void ApplyMaxSymbols(Dictionary<InlineCollectionType, InlinesWrapper> inlinesCollection)
         {
             if (!AppConfig.Instance.HighlightMaxSymbols)
             {
@@ -354,8 +444,8 @@ namespace LocalizationTracker.Data
             {
                 if (SymbolsCount > AppConfig.Instance.SymbolsBorders.ShortAnswer)
                 {
-                    m_InlinesCollection[InlineCollectionType.MaxLength] = MaxLength.MakeInlines(Inlines.ToString(), AppConfig.Instance.SymbolsBorders.ShortAnswer);
-                    Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.MaxLength]);
+                    inlinesCollection[InlineCollectionType.MaxLength] = MaxLength.MakeInlines(Inlines.ToString(), AppConfig.Instance.SymbolsBorders.ShortAnswer);
+                    Inlines = Inlines.MergeWith(inlinesCollection[InlineCollectionType.MaxLength]);
                     Color = Brushes.Red;
                     if (!m_String.Data.GetLocale(Locale).Traits.Contains(extraSymbols))
                         m_String.Data.GetLocale(Locale).AddTraitInternal(extraSymbols);
@@ -376,8 +466,8 @@ namespace LocalizationTracker.Data
                 {
                     if (SymbolsCount > AppConfig.Instance.SymbolsBorders.En)
                     {
-                        m_InlinesCollection[InlineCollectionType.MaxLength] = MaxLength.MakeInlines(Inlines.ToString(), AppConfig.Instance.SymbolsBorders.En);
-                        Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.MaxLength]);
+                        inlinesCollection[InlineCollectionType.MaxLength] = MaxLength.MakeInlines(Inlines.ToString(), AppConfig.Instance.SymbolsBorders.En);
+                        Inlines = Inlines.MergeWith(inlinesCollection[InlineCollectionType.MaxLength]);
                         Color = Brushes.Red;
                         if (!m_String.Data.GetLocale(Locale).Traits.Contains(extraSymbols))
                             m_String.Data.GetLocale(Locale).AddTraitInternal(extraSymbols);
@@ -387,8 +477,8 @@ namespace LocalizationTracker.Data
                 }
                 else if (SymbolsCount > AppConfig.Instance.SymbolsBorders.Common)
                 {
-                    m_InlinesCollection[InlineCollectionType.MaxLength] = MaxLength.MakeInlines(Inlines.ToString(), AppConfig.Instance.SymbolsBorders.Common);
-                    Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.MaxLength]);
+                    inlinesCollection[InlineCollectionType.MaxLength] = MaxLength.MakeInlines(Inlines.ToString(), AppConfig.Instance.SymbolsBorders.Common);
+                    Inlines = Inlines.MergeWith(inlinesCollection[InlineCollectionType.MaxLength]);
                     Color = Brushes.Red;
                     SymbolsBordersAndCount = $"{SymbolsCount}/{AppConfig.Instance.SymbolsBorders.Common}";
                     if (!m_String.Data.GetLocale(Locale).Traits.Contains(extraSymbols))
@@ -412,12 +502,12 @@ namespace LocalizationTracker.Data
             }
         }
 
-        public void ApplyFilter(string targetText)
+        public void ApplyFilter(string targetText, Dictionary<InlineCollectionType, InlinesWrapper> inlinesCollection)
         {
             if (!string.IsNullOrEmpty(targetText))
             {
-                m_InlinesCollection[InlineCollectionType.Filter] = FilterFits.MakeInlines(Inlines.ToString(), StringManager.Filter.SelectedColor);
-                Inlines = Inlines.MergeWith(m_InlinesCollection[InlineCollectionType.Filter]);
+                inlinesCollection[InlineCollectionType.Filter] = FilterFits.MakeInlines(Inlines.ToString(), StringsFilter.Filter.SelectedColor);
+                Inlines = Inlines.MergeWith(inlinesCollection[InlineCollectionType.Filter]);
             }
         }
     }

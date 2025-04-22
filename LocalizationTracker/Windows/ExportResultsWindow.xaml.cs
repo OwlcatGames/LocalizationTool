@@ -32,8 +32,15 @@ namespace LocalizationTracker.Windows
 			using (var reporter = new ProgressReporter(this))
 			{
 				await Task.Run(() => _exportWrapper.Export(reporter));
+				if (_exportWrapper._data.DistFolder == "")
+				{
+					Close();
+					return;
+				}
+
 				ExportDone(reporter.TotalOperationTime);
-			}
+
+            }
 		}
 
 		void ExportDone(string operationTime)

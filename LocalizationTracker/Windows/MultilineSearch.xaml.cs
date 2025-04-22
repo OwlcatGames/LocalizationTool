@@ -20,7 +20,7 @@ namespace LocalizationTracker.Windows
         public bool IsClosed { get; set; }
 
         public event EventHandler WindowClosed;
-        public StringsFilter Filter => StringManager.Filter;
+        public StringsFilter Filter => StringsFilter.Filter;
 
         public MultilineSearch(object dataContext)
         {

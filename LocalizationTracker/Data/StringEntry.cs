@@ -1,34 +1,28 @@
 ﻿using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Logic;
-using LocalizationTracker.Utility;
 using LocalizationTracker.Windows;
 using System;
-using System.Globalization;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media;
-using LocalizationTracker.Data.Unreal;
-using LocalizationTracker.Data.Wrappers;
-using System.ComponentModel;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Google.Apis.Sheets.v4.Data;
-using DocumentFormat.OpenXml.Drawing;
+using Path = System.IO.Path;
+using System.Linq;
+using System.Collections.Generic;
+using StringsCollector.Data.Unity;
+using StringsCollector.Data.Wrappers;
+using StringsCollector.Data.Unreal;
 
 namespace LocalizationTracker.Data
 {
     public partial class StringEntry : IComparable<StringEntry>
     {
-        public static event Action<string> StaticPropertyChanged;
+        public static event Action? SourceLocaleChanged;
+        public static event Action? TargetLocaleChanged;
 
         public static string SelectedDirPrefix;
-
         private static Locale? s_SourceLocale;
+        
         private static string s_SourceTrait = LocaleTrait.Final.ToString();
+        
         private static Locale? s_TargetLocale;
 
         public static Locale SourceLocale
@@ -39,7 +33,7 @@ namespace LocalizationTracker.Data
                 if (value == s_SourceLocale)
                     return;
                 s_SourceLocale = value;
-                StaticPropertyChanged?.Invoke(nameof(SourceLocale));
+                SourceLocaleChanged?.Invoke();
                 UpdateAllLocaleEntries();
             }
         }
@@ -52,7 +46,7 @@ namespace LocalizationTracker.Data
                 if (value == s_TargetLocale)
                     return;
                 s_TargetLocale = value;
-                StaticPropertyChanged?.Invoke(nameof(TargetLocale));
+                TargetLocaleChanged?.Invoke();
                 UpdateAllLocaleEntries();
             }
         }
@@ -62,16 +56,21 @@ namespace LocalizationTracker.Data
 
         // may use backward or forward slashes, no guarantees
         [NotNull]
-        public string AbsolutePath { get; }
         private readonly string m_Name;
+
+        public string AbsolutePath { get; }
+        public string StringPath { get; set; }
 
         // uses forward slashes '/'
         [NotNull]
-        public string PathRelativeToStringsFolder => Data.StringPath;
+        public string PathRelativeToStringsFolder => StringPath;
+
+        public List<DialogsData?> DialogsDataList { get; set; }
+
 
         // excludes string name, has trailing slash, uses forward slashes '/'
         public string DirectoryRelativeToStringsFolder =>
-            m_DirectoryRelativeToStringsFolder ??= Data.StringPath.Substring(0, Data.StringPath.LastIndexOf('/') + 1);
+            m_DirectoryRelativeToStringsFolder ??= StringPath.Substring(0, StringPath.LastIndexOf('/') + 1);
 
         [NotNull]
         private string m_SelectedFolderPath;
@@ -114,11 +113,9 @@ namespace LocalizationTracker.Data
 
         public LocaleEntry SourceLocaleEntry { get; private set; }
 
-        public LocaleEntry TargetLocaleEntry { get; private set; }
+        public LocaleEntry TargetLocaleEntry { get;  private set; }
 
-        public string Speaker => Data.Speaker;
-        public ParentId ParentId => Data.ParentId;
-
+        public string? Speaker => Data.Speaker;
 
         [NotNull]
         public IStringData Data;
@@ -185,23 +182,75 @@ namespace LocalizationTracker.Data
             }
         }
 
+        [Obsolete("Not used except tests")]
         public StringEntry(string absolutePath)
         {
             AbsolutePath = absolutePath;
-            m_Name = System.IO.Path.GetFileName(absolutePath);
+            m_Name = Path.GetFileName(absolutePath);
+
             //FileModificationTime = modificationTime;
         }
 
         public StringEntry(IStringData data)
         {
             Data = data;
-            AbsolutePath = data is LocalizedStringData lsd ? lsd.AbsolutePath : data.StringPath; // todo: get rid of absolutepath maybe?
-            m_Name = System.IO.Path.GetFileName(AbsolutePath);
+            
+            AbsolutePath = data.SourcePath;
+            StringPath = data.StringPath;
+                
+            m_Name = Path.GetFileName(AbsolutePath);
+
+            if (StringManager.AllDialogs.Count() != 0)
+            {
+                var cleanKey = data.Key;
+                var name = string.Empty;
+
+                if (data.Key.Contains(":"))
+                {
+                    var findKey = data.Key.Split(":");
+                    name = findKey[0].Trim();
+                    cleanKey = findKey[1].Trim();
+                }
+
+                var result = StringManager.AllDialogs
+                    .Select(dialog => new
+                    {
+                        Dialog = dialog,
+                        Node = dialog.Nodes
+                           .Where(node => node.Text != null &&
+                                  node.Text.Key == cleanKey)
+                            .ToList(),
+                    })
+                    .Where(x => x.Node.Count() != 0)
+                    .ToList();
+
+                if (result.SelectMany(r => r.Node).Any(node => node.Shared == true))
+                {
+                    result = StringManager.AllDialogs
+                    .Select(dialog => new
+                    {
+                        Dialog = dialog,
+                        Node = dialog.Nodes
+                           .Where(node => node.Text != null &&
+                                  node.Text.Key == cleanKey &&
+                                  node.Text.Namespace == name)
+                            .ToList(),
+                    })
+                    .Where(x => x.Node.Count() != 0)
+                    .ToList();
+                }
+
+                if (result.Count() != 0)
+                {
+                    DialogsDataList = result.Select(s => s.Dialog).ToList();
+                }
+            }
 
             if (data is UnrealStringData usd)
             {
                 AssetStatus = usd.Unused ? AssetStatus.NotUsed : AssetStatus.Used;
             }
+
         }
 
         private static void UpdateAllLocaleEntries() => Parallel.ForEach(StringManager.AllStrings, s => s.UpdateLocaleEntries());
@@ -213,10 +262,10 @@ namespace LocalizationTracker.Data
                 TargetLocaleEntry = new LocaleEntry(this, TargetLocale);
                 SourceLocaleEntry = new LocaleEntry(TargetLocaleEntry);
             }
-            else if (StringManager.Filter.Mode == FilterMode.Updated_Trait)
+            else if (StringsFilter.Filter.Mode == FilterMode.Updated_Trait)
             {
                 SourceLocaleEntry = new LocaleEntry(this, SourceLocale);
-                TargetLocaleEntry = LocaleEntry.Empty;
+                //TargetLocaleEntry = LocaleEntry.Empty;
             }
             else
             {
@@ -232,17 +281,12 @@ namespace LocalizationTracker.Data
 
         public void Save()
         {
-            StringManager.Archive.Save(Data);
+            StringManager.Save(Data);
         }
 
         public void Reload()
         {
-            Data = StringManager.Archive.Reload(Data);
-        }
-
-        public bool IsFileModified()
-        {
-            return StringManager.Archive.IsFileModified(Data);
+            Data = StringManager.Reload(Data);
         }
 
         public int CompareTo(StringEntry? other)

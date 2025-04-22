@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using Kingmaker.Localization.Shared;
+using StringsCollector.Data;
 using LocalizationTracker.Utility;
 
 namespace LocalizationTracker.Data

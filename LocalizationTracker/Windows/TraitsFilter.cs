@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 
 namespace LocalizationTracker.Windows

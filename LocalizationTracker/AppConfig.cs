@@ -4,17 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Windows;
-using Kingmaker.Localization.Shared;
+using StringsCollector.Data;
+using StringsCollector;
+using JetBrains.Annotations;
+using LocalizationTracker.Logic;
 
 namespace LocalizationTracker
 {
-	public class AppConfig
+	public class AppConfig: AppConfigBase
 	{
-		public enum EngineType
-		{
-			Unity, Unreal
-		}
-		
 		public class DeepLConfig
 		{
 			[JsonInclude]
@@ -61,13 +59,10 @@ namespace LocalizationTracker
         public static AppConfig Instance { get; set; }
 
 		[JsonInclude]
-		public EngineType Engine = EngineType.Unity;
+		public StringManager.EngineType Engine = StringManager.EngineType.Unity;
 
 		[JsonInclude]
 		public bool ModdersVersion = false;
-
-        [JsonInclude]
-        public string Project = "";
 
 		[JsonInclude]
 		public string IconPath = "";
@@ -77,6 +72,10 @@ namespace LocalizationTracker
 
         [JsonInclude]
 		public string StringsFolder = "";
+
+        [JsonInclude]
+		[CanBeNull]
+        public string DialogsFolder = "";
 
         [JsonInclude]
         public string UnitsFolder = "";
@@ -90,15 +89,6 @@ namespace LocalizationTracker
 		[JsonInclude]
 		public string LocalizationPacksFolder = "";
 
-		[JsonInclude]
-		public string[] Locales = System.Array.Empty<string>();
-
-		[JsonInclude]
-		public string UnrealNativeLocale = "ru";
-
-		[JsonInclude]
-		public bool AddDefaultLocales = true;
-
         [JsonInclude]
         public HashSet<string> IgnoreMismatchedTags = new();
         [JsonInclude]
@@ -108,7 +98,7 @@ namespace LocalizationTracker
 		public bool EnableCopyData;
 
 		[JsonInclude]
-		public bool AddAIGeneratedTag { get; set; } = true;
+		public bool AddForRetranslationTag { get; set; } = true;
 
 		[JsonInclude]
 		public bool CountUnusedStrings { get; set; }
@@ -148,6 +138,8 @@ namespace LocalizationTracker
 		public static void SetupInstance(AppConfig instance)
 		{
 			Instance = instance;
+			InstanceBase = instance;
+
             var currentDirectory = Directory.GetCurrentDirectory();
 			var absPath = Path.GetFullPath(Path.Combine(currentDirectory, instance.StringsFolder));
             if (!Directory.Exists(absPath))

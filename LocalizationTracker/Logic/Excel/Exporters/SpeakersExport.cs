@@ -1,7 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
 using LocalizationTracker.Data;
 using LocalizationTracker.Utility;

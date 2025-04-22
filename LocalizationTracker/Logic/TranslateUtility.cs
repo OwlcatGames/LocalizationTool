@@ -4,7 +4,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DeepL;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
 using LocalizationTracker.Windows;
 
@@ -16,11 +15,11 @@ public static class TranslateUtility
     {
         TagHandling = "xml"
     };
-    private static string PrepareTagsForTranslation(AppConfig.EngineType engine, string text)
+    private static string PrepareTagsForTranslation(StringManager.EngineType engine, string text)
         => engine switch
         {
-            AppConfig.EngineType.Unreal => PrepareTagsForTranslationUnreal(text),
-            AppConfig.EngineType.Unity => PrepareTagsForTranslationUnity(text),
+            StringManager.EngineType.Unreal => PrepareTagsForTranslationUnreal(text),
+            StringManager.EngineType.Unity => PrepareTagsForTranslationUnity(text),
             _ => throw new NotImplementedException()
         };
 
@@ -235,11 +234,11 @@ public static class TranslateUtility
         return text;
     }
 
-    private static string RestoreTagsAfterTranslation(AppConfig.EngineType engine, string text)
+    private static string RestoreTagsAfterTranslation(StringManager.EngineType engine, string text)
         => engine switch
         {
-            AppConfig.EngineType.Unreal => RestoreTagsAfterTranslationUnreal(text),
-            AppConfig.EngineType.Unity => RestoreTagsAfterTranslationUnity(text),
+            StringManager.EngineType.Unreal => RestoreTagsAfterTranslationUnreal(text),
+            StringManager.EngineType.Unity => RestoreTagsAfterTranslationUnity(text),
             _ => throw new NotImplementedException()
         };
 
@@ -283,7 +282,7 @@ public static class TranslateUtility
         throw new Exception($"Cant find target locale {locale} mapping in config.json");
     }
 
-    public static async Task Translate(List<StringEntry> entries, Translator translator, bool addTagToString, AppConfig.EngineType engine, IProgress<int> progress)
+    public static async Task Translate(List<StringEntry> entries, Translator translator, bool addTagToString, StringManager.EngineType engine, IProgress<int> progress)
     {
         entries.RemoveAll(e => string.IsNullOrEmpty(e.SourceLocaleEntry.Text)); // deepl fails on empty strings
         if (entries.Count == 0)
@@ -311,7 +310,7 @@ public static class TranslateUtility
             var source = PrepareTagsForTranslation(engine, entry.SourceLocaleEntry.Text);
             stringsToSend.Add(source);
             symbolsInTask += source.Length;
-            if (symbolsInTask < MaxSymbolsInTask && ii <entries.Count-1)
+            if (symbolsInTask < MaxSymbolsInTask && ii < entries.Count - 1)
             {
                 continue;
             }
@@ -330,13 +329,13 @@ public static class TranslateUtility
 
                     entries[jj].Data.UpdateTranslation(
                         targetLocale,
-                        addTagToString ? "[AIGenerated]" + resultText : resultText,
+                        addTagToString ? "[ForRetranslation]" + resultText : resultText,
                         sourceLocale,
                         entries[jj].SourceLocaleEntry.Text);
                     entries[jj].Data.AddTrait(targetLocale, "AIGenerated");
                     entries[jj].Save();
 
-                    if (StringManager.Filter.Mode == FilterMode.Tags_Mismatch)
+                    if (StringsFilter.Filter.Mode == FilterMode.Tags_Mismatch)
                     {
                         // rerun comparison immediately if we're comparing tags
                         TagsList.Compare(entries[jj].SourceLocaleEntry.TagsList, entries[jj].TargetLocaleEntry.TagsList);
@@ -369,10 +368,15 @@ public static class TranslateUtility
         await Task.WhenAll(allTasks);
     }
 
-    public static async Task TranslateComment(List<StringEntry> entries, Translator translator, IProgress<int> progress)
+    public static async Task TranslateComment(List<StringEntry> entries, Translator translator, IProgress<int> progress, FilterMode mode)
     {
-        entries.RemoveAll(e => string.IsNullOrEmpty(e.SourceLocaleEntry.TranslatorComment)); // deepl fails on empty strings
-        if (entries.Count==0)
+
+        if (mode == FilterMode.Voice_Comments)
+            entries.RemoveAll(e => string.IsNullOrEmpty(e.SourceLocaleEntry.VoiceComment)); // deepl fails on empty strings
+        else
+            entries.RemoveAll(e => string.IsNullOrEmpty(e.SourceLocaleEntry.TranslatorComment)); // deepl fails on empty strings
+
+        if (entries.Count == 0)
             return;
 
         var m_CountLeft = entries.Count;
@@ -395,9 +399,13 @@ public static class TranslateUtility
             // combine strings into one request until we reach MaxSymbolsInTask in one request
             StringEntry entry = entries[ii];
             var source = entry.SourceLocaleEntry.TranslatorComment;
+
+            if (mode == FilterMode.Voice_Comments)
+                source = entry.SourceLocaleEntry.VoiceComment;
+
             stringsToSend.Add(source);
             symbolsInTask += source.Length;
-            if (symbolsInTask < MaxSymbolsInTask && ii <entries.Count-1)
+            if (symbolsInTask < MaxSymbolsInTask && ii < entries.Count - 1)
             {
                 continue;
             }
@@ -413,7 +421,16 @@ public static class TranslateUtility
                 for (int jj = from; jj < to; jj++)
                 {
                     var resultText = translationResult[jj - from];
-                    entries[jj].TargetLocaleEntry.TranslatorComment = "[AIGenerated]" + resultText.Text;
+
+                    if (mode == FilterMode.Voice_Comments)
+                    {
+                        entries[jj].TargetLocaleEntry.VoiceComment = "[ForRetranslation]" + resultText.Text;
+                    }
+                    else
+                    {
+                        entries[jj].TargetLocaleEntry.TranslatorComment = "[ForRetranslation]" + resultText.Text;
+                    }
+
                     m_CountLeft--;
                 }
 

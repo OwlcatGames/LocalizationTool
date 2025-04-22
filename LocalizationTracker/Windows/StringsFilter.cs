@@ -2,29 +2,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Data.Odbc;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Presentation;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
-using LocalizationTracker.Data.Unreal;
 using LocalizationTracker.Logic;
 using LocalizationTracker.Tools;
 using LocalizationTracker.Tools.GlossaryTools;
 using LocalizationTracker.Utility;
-using LocalizationTracker.Components;
-using System.Windows.Threading;
-using DocumentFormat.OpenXml.ExtendedProperties;
-using static LocalizationTracker.Windows.TraitsFilter;
+using StringsCollector.Data.Unreal;
 
 namespace LocalizationTracker.Windows
 {
@@ -37,6 +27,10 @@ namespace LocalizationTracker.Windows
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(info));
         }
+
+        public static readonly StringsFilter Filter = new();
+
+        public static StringEntry[] FilteredStrings { get; private set; } = Array.Empty<StringEntry>();
 
         private bool m_IgnoreCase = true;
         private bool m_HideTags = false;
@@ -289,6 +283,8 @@ namespace LocalizationTracker.Windows
                 !StringUtils.MatchesFilter(stringEntry.TargetLocaleEntry.Text, Text, m_IgnoreCase))
                 return false;
 
+
+
             if (m_ModificationDateFrom != null || m_ModificationDateTo != null)
             {
                 if (!CheckModificationTime(stringEntry))
@@ -318,6 +314,18 @@ namespace LocalizationTracker.Windows
                     }
                 }
                 if (localeData.MismatchedTraitString == "")
+                    return false;
+            }
+
+            if (Mode == FilterMode.Voice_Comments)
+            {
+                if (string.IsNullOrEmpty(stringEntry.SourceLocaleEntry.VoiceComment)
+                && string.IsNullOrEmpty(stringEntry.TargetLocaleEntry.VoiceComment))
+                    return false;
+            }
+            else
+            {
+                if (stringEntry.SourceLocaleEntry.Text == "Dialog comment" || stringEntry.TargetLocaleEntry.Text == "Dialog comment")
                     return false;
             }
 
@@ -430,6 +438,16 @@ namespace LocalizationTracker.Windows
             traitsFilter.Not = true;
             traitsFilter.Updated += () => Updated?.Invoke();
             TraitFilters.Add(traitsFilter);
+
+            if (AppConfig.Instance.Project == "Rue Valley")
+            {
+                var filter = new TraitsFilter();
+                filter.Locale = Locale.Values.FirstOrDefault(w => w.Code == "en-SR");
+                filter.Traits.Add("Draft");
+                filter.Not = true;
+                filter.Updated += () => Updated?.Invoke();
+                TraitFilters.Add(filter);
+            }
         }
 
         public void AddTraitsFilter()
@@ -510,7 +528,7 @@ namespace LocalizationTracker.Windows
                     }
                 }
             }
-       
+
             if (stringBuilder.Length != 0)
             {
                 NotFound = $"Not found:\r\n{stringBuilder.ToString()}";
@@ -521,7 +539,14 @@ namespace LocalizationTracker.Windows
                 NotFound = "";
                 ForegroundColor = Brushes.Black;
             }
+        }
 
+        public StringEntry[] Update()
+        {
+            return FilteredStrings = StringManager.AllStrings
+                .AsParallel()
+                .Where(Fits)
+                .ToArray();
         }
     }
 

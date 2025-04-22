@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using DocumentFormat.OpenXml.Drawing;
 using LocalizationTracker.Components;
 using LocalizationTracker.Utility;
 
@@ -14,6 +16,7 @@ namespace LocalizationTracker.Data
             public int StartIndex;
             public int EndIndex;
             public string Tag;
+            public Entry ClosingTag;
             public string FullText;
             public bool IsClosing;
             public bool IsUnmatched;
@@ -47,9 +50,17 @@ namespace LocalizationTracker.Data
                     else
                     {
                         tag.WrongOpenClose = stack.Count == 0 || stack.Peek().Tag != tag.Tag;
-                        if (!tag.WrongOpenClose)
+
+                        if (stack.Count > 0 && stack.Peek().Tag == tag.Tag)
                         {
-                            stack.Pop().WrongOpenClose = false;
+                            var openingTag = stack.Pop();
+                            openingTag.ClosingTag = tag;
+                            openingTag.WrongOpenClose = false;
+                            tag.WrongOpenClose = false;
+                        }
+                        else
+                        {
+                            tag.WrongOpenClose = true;
                         }
                     }
                 }
@@ -94,7 +105,7 @@ namespace LocalizationTracker.Data
                 // add plain text before the tag
                 if (idx < tag.StartIndex)
                 {
-                    result.Add(new InlineTemplate(text.Substring(idx, tag.StartIndex-idx)));
+                    result.Add(new InlineTemplate(text.Substring(idx, tag.StartIndex - idx)));
                 }
                 // add tag itself
                 result.Add(GetRunForTag(tag));
@@ -111,39 +122,32 @@ namespace LocalizationTracker.Data
 
         public static bool Compare(TagsList l1, TagsList l2)
         {
-            var hs1 = new HashSet<TagsList.Entry>(l1.Tags);
-            var hs2 = new HashSet<TagsList.Entry>(l2.Tags);
-
-            foreach (var tag in l1.Tags)
+            void CheckTags(TagsList source, TagsList target)
             {
-                if (AppConfig.Instance.IgnoreMismatchedTags.Contains(tag.Tag))
+                foreach (var tag in source.Tags.Where(w => !w.IsClosing))
                 {
-                    hs1.Remove(tag);
-                    continue;
+                    if (AppConfig.Instance.IgnoreMismatchedTags.Contains(tag.Tag))
+                        continue;
+
+                    var match = target.Tags.FirstOrDefault(t => t.FullText == tag.FullText);
+
+                    if (match == null)
+                    {
+                        source.HasUnmatchedTags = true;
+                        tag.IsUnmatched = true;
+
+                        if (tag.ClosingTag != null)
+                            tag.ClosingTag.IsUnmatched = true;
+                    }
                 }
-
-                var match = hs2.FirstOrDefault(t => t.FullText == tag.FullText);
-                if (match != null)
-                {
-                    hs1.Remove(tag);
-                    hs2.Remove(match);
-                }
             }
 
-            hs2.RemoveWhere(t => AppConfig.Instance.IgnoreMismatchedTags.Contains(t.Tag));
+            CheckTags(l1, l2);
+            CheckTags(l2, l1);
 
-            foreach (var tag in l1.Tags)
-            {
-                tag.IsUnmatched = hs1.Contains(tag);
-            }
-            foreach (var tag in l2.Tags)
-            {
-                tag.IsUnmatched = hs2.Contains(tag);
-            }
+            l1.HasUnmatchedTags = l2.HasUnmatchedTags = l1.HasUnmatchedTags == true || l2.HasUnmatchedTags == true;
 
-            l1.HasUnmatchedTags = l2.HasUnmatchedTags = hs1.Count > 0 || hs2.Count > 0;
-
-            return !l1.HasUnmatchedTags.Value;
+            return !l1.HasUnmatchedTags.GetValueOrDefault();
         }
     }
 }

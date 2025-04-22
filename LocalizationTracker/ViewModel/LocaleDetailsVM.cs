@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Components;
-using LocalizationTracker.Data.Wrappers;
+using StringsCollector.Data.Wrappers;
 
 namespace LocalizationTracker.ViewModel
 {

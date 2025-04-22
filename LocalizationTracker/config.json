@@ -1,5 +1,5 @@
 {
-  "ModdersVersion" : true,
+  "ModdersVersion": true,
   "Project": "Localization Tool",
   "IconPath": "Icon.png",
   "MultilineSearchIcon": "MultilineSearchIcon.png",
@@ -10,7 +10,7 @@
   "IgnoreMismatchedTags": [ "mf", "name", "n" ],
   "NeedClosingTags": [ "n", "g", "d", "m" ],
   "Locales": [ "jaJP", "dev" ],
-  "AddAIGeneratedTag": false,
+  "AddForRetranslationTag": true,
   "DeepL": {
     "APIKey": "",
     "SourceLocaleMap": {

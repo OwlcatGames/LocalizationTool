@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Kingmaker.Localization.Shared;
 
 namespace LocalizationTracker.Tools.GlossaryTools;
 

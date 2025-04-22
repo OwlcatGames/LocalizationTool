@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Office2013.ExcelAc;
+using DocumentFormat.OpenXml.Office2016.Drawing.Command;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using DocumentFormat.OpenXml.Vml.Office;
@@ -7,11 +8,14 @@ using LocalizationTracker.Data;
 using LocalizationTracker.Utility;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using LocalizationTracker.Logic;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace LocalizationTracker.Excel
 {
@@ -21,7 +25,86 @@ namespace LocalizationTracker.Excel
         public string FileFilter => "Excel document|*.xlsx";
 
         public virtual ExportData PrepareDataToExport(ExportData data)
-            => data;
+        {
+            if (data.ExportParams.SortAsSvg == true)
+            {
+                data.Items = SortStrings(data);
+            }
+
+            return data;
+        }
+
+        public StringEntry[] SortStrings(ExportData data)
+        {
+            List<StringEntry> sortedStrings = new List<StringEntry>();
+            Dictionary<DialogsData?, List<StringEntry>> strings = new();
+
+            //non-shared strings
+            var singleDialogStrings = data.Items
+                .Where(w => w.DialogsDataList != null)
+                .Where(w => w.DialogsDataList.Any(dialog =>
+                    dialog.Nodes.Any(node =>
+                        node.Text != null &&
+                        node.Text.Key == (w.Key.Contains(":") ? w.Key.Split(":")[1] : w.Key) &&
+                        node.Shared == false)))
+                .GroupBy(grp => grp.DialogsDataList.FirstOrDefault())
+                .ToDictionary(group => group.Key, group => group.ToList());
+
+
+            //shared strings
+            var sharedStrings = data.Items
+                .Where(w => w.DialogsDataList != null)
+                .Where(w => w.DialogsDataList
+                    .Any(dialog => dialog.Nodes
+                        .Any(node => node.Text != null
+                            && node.Text.Key == (w.Key.Contains(":") ? w.Key.Split(":")[1] : w.Key) 
+                            && node.Shared == true))) 
+                .ToList();
+
+            foreach (var sharedString in sharedStrings)
+            {
+                foreach (var dialog in sharedString.DialogsDataList)
+                {
+                    if (singleDialogStrings.ContainsKey(dialog)) 
+                    {
+                        singleDialogStrings[dialog].Add(sharedString);
+                    }
+                }
+            }
+
+            foreach (var key in singleDialogStrings.Keys)
+            {
+                foreach (var node in key.Nodes.Where(w => w.Text != null))
+                {
+                    string nodeKey = node.Text.Namespace != null ? $"{node.Text.Namespace}:{node.Text.Key}" : node.Text.Key;
+
+                    if (node.Shared == true)
+                    {
+                        if (AppConfig.Instance.Engine == StringManager.EngineType.Unreal
+                            && singleDialogStrings[key].Any(s => s.Key == nodeKey))
+                        {
+                            sortedStrings.Add(singleDialogStrings[key].First(s => s.Key == nodeKey));
+                        }
+                        else if (singleDialogStrings[key].Any(s => s.Key == node.Text.Key))
+                        {
+                            sortedStrings.Add(singleDialogStrings[key].First(s => s.Key == node.Text.Key));
+                        }
+                    }
+                    else if (singleDialogStrings[key].Any(s => s.Key.Replace(":", "") == node.Text.Key))
+                    {
+                        sortedStrings.Add(singleDialogStrings[key].First(s => s.Key.Replace(":", "") == node.Text.Key));
+                    }
+                }
+            }
+
+            sortedStrings = sortedStrings.Distinct().ToList();
+
+            // Добавляем строки, которые не связаны с диалогами
+            sortedStrings.AddRange(data.Items.Where(w => w.DialogsDataList == null || !w.DialogsDataList.Any()));
+            sortedStrings.AddRange(data.Items.Where(w => w.AssetStatus == AssetStatus.NotUsed));
+
+            return sortedStrings.ToArray();
+        }
 
         protected virtual ColumnSettings[] ColumnsSettings => new[]
         {
@@ -35,6 +118,8 @@ namespace LocalizationTracker.Excel
 
         public ExportResults Export(ExportData data, Action<int, int> OnExportProgressEvent)
         {
+            if (data.DistFolder == "") return null;
+
             UnityAssets.ClearFoldersCache();
             var path = data.DistFolder;
             var strings = data.Items;
@@ -110,6 +195,8 @@ namespace LocalizationTracker.Excel
                     row.AppendCell(new Cell().SetText("comment"));
                 }
 
+                row.AppendCell(new Cell().SetText("Shared"));
+
             }
 
         }
@@ -132,6 +219,15 @@ namespace LocalizationTracker.Excel
                 if (data.ExportParams.IncludeComment)
                 {
                     row.AppendCell(new Cell().SetText(s.Data.GetLocale(data.ExportParams.Source)?.TranslatedComment ?? ""));
+                }
+
+
+                if (s.DialogsDataList != null && s.DialogsDataList.Count() != 0 && s.DialogsDataList.FirstOrDefault().Nodes
+                        .Where(w => w.Text != null
+                                && w.Text.Key == (s.Key.Contains(":") ? s.Key.Split(":")[1] : s.Key))
+                        .FirstOrDefault().Shared == true)
+                {
+                    row.AppendCell(new Cell().SetText("shared string"));
                 }
             }
             else
@@ -175,6 +271,7 @@ namespace LocalizationTracker.Excel
                     targetText = StringUtils.RemoveTags(text, LocalizationExporter.TagsToRetain);
                     var sharedTargetText = MarkNonVocalWords(text);
                     row.AppendCell(new Cell().SetSharedText(doc.AddSharedString(sharedTargetText)));
+
                 }
             }
             else if (data.ExportParams.TagRemovalPolicy == TagRemovalPolicy.DeleteUpdatedTag)
@@ -229,54 +326,61 @@ namespace LocalizationTracker.Excel
         private SharedStringItem MarkNonVocalWords(string text)
         {
             SharedStringItem item = new SharedStringItem();
+
             int blockStart = 0;
             var matches = StringUtils.NonVocalWordMatcher().Matches(text);
 
             foreach (Match match in matches)
             {
+                if (match.Index > blockStart)
                 {
                     var substring = text[blockStart..match.Index];
                     var xmlRun = new Run();
+
+                    xmlRun.PrependChild(Bold);
+
                     var blockText = new Text
                     {
                         Space = SpaceProcessingModeValues.Preserve,
                         Text = substring
                     };
+
                     xmlRun.Append(blockText);
-                    xmlRun.Append(Bold);
                     item.Append(xmlRun);
                 }
 
+                var matchedSubstring = match.Value;
+                var matchedRun = new Run();
+
+                var matchedText = new Text
                 {
-                    var substring = match.Value;
-                    var xmlRun = new Run();
-                    var blockText = new Text
-                    {
-                        Space = SpaceProcessingModeValues.Preserve,
-                        Text = substring
-                    };
-                    xmlRun.Append(blockText);
-                    item.Append(xmlRun);
-                }
+                    Space = SpaceProcessingModeValues.Preserve,
+                    Text = matchedSubstring
+                };
+
+                matchedRun.Append(matchedText);
+                item.Append(matchedRun);
 
                 blockStart = match.Index + match.Length;
             }
+
             if (text.Length - blockStart > 0)
             {
-                var substring = text[blockStart..text.Length];
+                var remainingSubstring = text[blockStart..text.Length];
                 var xmlRun = new Run();
-                var blockText = new Text
+                xmlRun.PrependChild(Bold);
+                var remainingText = new Text
                 {
                     Space = SpaceProcessingModeValues.Preserve,
-                    Text = substring
+                    Text = remainingSubstring
                 };
-                xmlRun.Append(blockText);
-                xmlRun.Append(Bold);
+                xmlRun.Append(remainingText);
                 item.Append(xmlRun);
             }
 
             return item;
         }
+
 
         private static RunProperties Bold
         {
@@ -309,6 +413,8 @@ namespace LocalizationTracker.Excel
             {
                 sourceText = StringUtils.RemoveTagsExcept(sourceText, LocalizationExporter.TagsToRetain);
                 var sharedText = MarkNonVocalWords(sourceText);
+
+
                 row.AppendCell(new Cell()
                 .SetSharedText(doc.AddSharedString(sharedText))
                 .SetStyle(CellStyle.Context));

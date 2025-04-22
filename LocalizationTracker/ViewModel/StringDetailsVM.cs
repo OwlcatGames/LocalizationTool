@@ -6,10 +6,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using JetBrains.Annotations;
-using Kingmaker.Localization.Shared;
 using LocalizationTracker.Data;
-using LocalizationTracker.Data.Unreal;
-using static LocalizationTracker.Data.Unreal.UnrealStringData;
+using static StringsCollector.Data.Unreal.UnrealStringData;
 
 namespace LocalizationTracker.ViewModel
 {

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Kingmaker.Localization.Shared;
+using StringsCollector.Data;
 
 namespace LocalizationTracker.Windows
 {

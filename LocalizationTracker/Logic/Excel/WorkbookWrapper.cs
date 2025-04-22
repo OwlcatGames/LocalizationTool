@@ -14,7 +14,7 @@ namespace LocalizationTracker.Excel
             _path = path;
             _sheet = SpreadsheetHelper.GetSpreadsheet(path, wrapperMod, columnDatas);
             _wrapperMod = wrapperMod;
-            if (_sheet != null)
+            if (_sheet != null && !string.IsNullOrEmpty(_path))
             {
                 try
                 {

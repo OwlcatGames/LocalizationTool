@@ -88,6 +88,8 @@ namespace LocalizationTracker.Excel
 
         public static void CreateDefaultSpreadsheet(string filepath, ColumnSettings[]? columnDatas)
         {
+            if (string.IsNullOrEmpty(filepath)) return;
+
             SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.
                 Create(filepath, SpreadsheetDocumentType.Workbook);
 
@@ -205,6 +207,9 @@ namespace LocalizationTracker.Excel
 
         public static int AddSharedString(this SpreadsheetDocument doc, SharedStringItem text)
         {
+            if (doc == null)
+                return 0;
+
             var sharedTbl = doc.GetSharedTable().SharedStringTable;
             sharedTbl.AppendChild(text);
             var count = sharedTbl.Elements<SharedStringItem>().Count();
