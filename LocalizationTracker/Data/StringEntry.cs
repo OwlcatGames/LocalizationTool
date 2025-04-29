@@ -21,7 +21,7 @@ namespace LocalizationTracker.Data
         public static string SelectedDirPrefix;
         private static Locale? s_SourceLocale;
         
-        private static string s_SourceTrait = LocaleTrait.Final.ToString();
+        private static string s_SourceTrait = LocaleTrait.Loc_Final.ToString();
         
         private static Locale? s_TargetLocale;
 
@@ -110,6 +110,7 @@ namespace LocalizationTracker.Data
             AssetStatus.NotUsed => Brushes.Red,
             _ => Brushes.White,
         };
+
 
         public LocaleEntry SourceLocaleEntry { get; private set; }
 

@@ -42,6 +42,7 @@ using System.Windows.Navigation;
 using LocalizationTracker.Tools.SVGTool;
 using StringsCollector.Data.Unreal;
 using StringsCollector.Data.Unity;
+using System.Windows.Media;
 
 namespace LocalizationTracker.Windows
 {
@@ -140,6 +141,7 @@ namespace LocalizationTracker.Windows
         public Locale[] TargetLocaleValues => Locale.Values;
 
         public string[] SourceTraitValues => LocaleTraitExtensions.Values.Select(v => v.ToString()).ToArray();
+
 
         private bool m_WordCueCount = true;
 

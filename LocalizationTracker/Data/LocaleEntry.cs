@@ -248,7 +248,7 @@ namespace LocalizationTracker.Data
                 .VOComment[Locale] = value;
 
             var bpPath = Path.Combine(AppConfig.Instance.AbsBlueprintsFolder,
-                Path.GetRelativePath(AppConfig.Instance.DialogsFolder, dialogsData.FileSource)).Replace(".json", ".jbp");
+                 Path.GetRelativePath(AppConfig.Instance.DialogsFolder, dialogsData.FileSource)).Replace(".json", ".jbp");
 
             bpPath = Path.Combine(Path.GetDirectoryName(bpPath), $"{dialogsData.Name}.jbp");
 
@@ -262,12 +262,12 @@ namespace LocalizationTracker.Data
                     if (blueprintData != null)
                     {
 
-                            if (blueprintData.Data.VoComments != null)
-                            {
-                                blueprintData.Data.VoComments[Locale] = value;
-                            }
-                            string updatedBpContent = JsonSerializer.Serialize(blueprintData, JsonSerializerHelpers.JsonSerializerOptions);
-                            File.WriteAllText(bpPath, updatedBpContent);
+                        if (blueprintData.Data.VoComments != null)
+                        {
+                            blueprintData.Data.VoComments[Locale] = value;
+                        }
+                        string updatedBpContent = JsonSerializer.Serialize(blueprintData, JsonSerializerHelpers.JsonSerializerOptions);
+                        File.WriteAllText(bpPath, updatedBpContent);
                     }
                     else
                     {
@@ -327,6 +327,28 @@ namespace LocalizationTracker.Data
             m_String = stringEntry;
             m_Locale = locale;
             UpdateInlines();
+        }
+
+
+        public Brush AudioExportedBackground
+        {
+            get
+            {
+                var sourceLocale = m_String.SourceLocaleEntry.Locale;
+                var targetLocale = m_String.TargetLocaleEntry.Locale;
+                var localeData = m_String.Data.GetLocale(targetLocale);
+
+                if (localeData != null
+                    && sourceLocale == Locale.DefaultFrom
+                    && targetLocale == Locale.DefaultTo
+                    && m_String.Data.GetLocale(targetLocale).Traits.Any(a => a.Trait == LocaleTrait.AudioExported.ToString()))
+                {
+                    return new SolidColorBrush(System.Windows.Media.Color.FromArgb(200, 220, 220, 220));
+                }
+
+
+                return Brushes.Transparent;
+            }
         }
 
         public LocaleEntry(LocaleEntry translation)

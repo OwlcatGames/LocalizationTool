@@ -324,7 +324,7 @@
                     <Button Content="Smart Commit" Click="OnSmartCommitClick" Visibility="{Binding ShowOnNonModdersOnUnityOnly}"/>
                     <Button Content="Update Glossary" Click="OnUpdateGlossaryClick" Visibility="{Binding GlossaryIsEnabled}"/>
                     <Button Content="Updated Speakers" Click="UpdatedSpeakersWindow_Click" Visibility="{Binding ShowOnNonModdersOnly}"/>
-                    <Button Content="Fan Loc Import" Click="Import" Visibility="{Binding ShowOnPathfinderOnly}"/>
+                    <Button Content="Fan Loc Import" Click="Import" Visibility="{Binding ShowOnUnityOnly}"/>
                 </StackPanel>
             </Grid>
             <GridSplitter Grid.Row="1" Grid.Column="0" Height="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
@@ -407,7 +407,6 @@
                                 <StackPanel Name="TraitSelection" Orientation="Horizontal" Visibility="Collapsed">
                                     <TextBlock Width="30" Margin="20,0,0,0" VerticalAlignment="Center">Trait</TextBlock>
                                     <components:TraitsSelector  TraitsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=Filter.UpdatedFilterTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="true" VerticalAlignment="Center" />
-
                                 </StackPanel>
                             </StackPanel>
                         </DataGridTemplateColumn.Header>
@@ -421,7 +420,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <components:InlinesTextBlock Grid.Column="0" InlinesWrapper="{Binding SourceLocaleEntry.Inlines}" Style="{StaticResource TextBlockWrapStyle}"/>
+                                    <components:InlinesTextBlock Background="{Binding SourceLocaleEntry.AudioExportedBackground}" Grid.Column="0" InlinesWrapper="{Binding SourceLocaleEntry.Inlines}" Style="{StaticResource TextBlockWrapStyle}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center"  Foreground="{Binding SourceLocaleEntry.Color}"/>
                                 </Grid>
                             </DataTemplate>
@@ -433,7 +432,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"  IsManipulationEnabled="False"/>
+                                    <TextBox Grid.Column="0" Background="{Binding SourceLocaleEntry.AudioExportedBackground}" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"  IsManipulationEnabled="False"/>
                                     <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding SourceLocaleEntry.TextBlockColor}"/>
                                 </Grid>
                             </DataTemplate>
@@ -457,7 +456,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <components:InlinesTextBlock InlinesWrapper="{Binding TargetLocaleEntry.Inlines }" Style="{StaticResource TextBlockWrapStyle}"/>
+                                    <components:InlinesTextBlock Background="{Binding SourceLocaleEntry.AudioExportedBackground}" InlinesWrapper="{Binding TargetLocaleEntry.Inlines }" Style="{StaticResource TextBlockWrapStyle}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center"  Foreground="{Binding TargetLocaleEntry.Color}"/>
                                 </Grid>
                             </DataTemplate>
@@ -469,7 +468,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Text="{Binding TargetLocaleEntry.Text,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                    <TextBox Background="{Binding SourceLocaleEntry.AudioExportedBackground}" Text="{Binding TargetLocaleEntry.Text,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding TargetLocaleEntry.TextBlockColor}"/>
                                 </Grid>
                             </DataTemplate>

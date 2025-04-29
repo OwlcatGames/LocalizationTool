@@ -73,9 +73,18 @@ namespace LocalizationTracker.Components
         private void UpdateTraitsList()
         {
             TraitEntries.Clear();
+
+            string[] traitValues = Enum.GetNames(typeof(StringTrait));
+
+            if (AppConfig.Instance.Project == "Amber")
+            {
+                traitValues = new[] { StringTrait.Invalid.ToString() };
+            }
+
             var enumValues = IsLocale
                 ? Enum.GetNames(typeof(LocaleTrait))
-                : Enum.GetNames(typeof(StringTrait));
+                : traitValues;
+
             foreach (var trait in enumValues)
             {
                 TraitEntries.Add(new TraitSelectorEntry(trait, false));
