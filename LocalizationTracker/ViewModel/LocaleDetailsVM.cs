@@ -12,7 +12,7 @@ namespace LocalizationTracker.ViewModel
 	{
 		public Locale Locale { get; internal set; }
 
-		public DateTimeOffset ModificationDate { get; internal set; }
+		public DateTimeOffset? ModificationDate { get; internal set; }
 
 		[NotNull]
 		public InlinesWrapper Text { get; internal set; }

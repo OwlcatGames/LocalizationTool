@@ -432,7 +432,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Background="{Binding SourceLocaleEntry.AudioExportedBackground}" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"  IsManipulationEnabled="False"/>
+                                    <TextBox Grid.Column="0" Text="{Binding SourceLocaleEntry.Text, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"  IsManipulationEnabled="False"/>
                                     <TextBlock Grid.Column="1" Text="{Binding SourceLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding SourceLocaleEntry.TextBlockColor}"/>
                                 </Grid>
                             </DataTemplate>
@@ -468,7 +468,7 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Background="{Binding SourceLocaleEntry.AudioExportedBackground}" Text="{Binding TargetLocaleEntry.Text,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
+                                    <TextBox Text="{Binding TargetLocaleEntry.Text,  Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource TextBoxWrapStyle}"/>
                                     <TextBlock Grid.Column="1" Text="{Binding TargetLocaleEntry.SymbolsBordersAndCount}" Margin="10,0,0,0" VerticalAlignment="Center" Foreground="{Binding TargetLocaleEntry.TextBlockColor}"/>
                                 </Grid>
                             </DataTemplate>
