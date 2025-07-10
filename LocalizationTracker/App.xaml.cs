@@ -45,7 +45,7 @@ namespace LocalizationTracker
                     jsonText = jsonText.Replace("\\", "/");
                     if (!CheckJsonIsValid(jsonText))
                     {
-                        ShowErrorAndShutdown($"config.json contents seems to be broken. Check that path values do not contain \\ (forwardslashes), replace them with / (backslashes). After fixing config values try to restart the app.");
+                        ShowErrorAndShutdown($"Config.json contents seems to be broken. Check that path values do not contain \\ (forwardslashes), replace them with / (backslashes). After fixing config values try to restart the app.");
                         return;
                     }
                     //Maybe we fixed json values, rewrite fixed json back to config.
@@ -94,7 +94,7 @@ namespace LocalizationTracker
                     }
                     else
                     {
-                        ShowErrorAndShutdown($"Strings folder path is not set in config.json. Please specify the path and restart the app");
+                        ShowErrorAndShutdown($"Strings folder path is not set in Config.json. Please specify the path and restart the app");
                         return;
                     }
 
@@ -120,7 +120,7 @@ namespace LocalizationTracker
                 if (!config.ModdersVersion && !string.IsNullOrWhiteSpace(config.AssetsFolder) && !Directory.Exists(config.AssetsFolder))
                 {
                     MessageBox.Show(
-                        $"config.AssetsFolder does not exist: {config.AssetsFolder}.{Environment.NewLine}Remove entry in config.json to suppress.",
+                        $"config.AssetsFolder does not exist: {config.AssetsFolder}.{Environment.NewLine}Remove entry in Config.json to suppress.",
                         "Warning",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -129,7 +129,7 @@ namespace LocalizationTracker
                 if (!config.ModdersVersion && !string.IsNullOrWhiteSpace(config.BlueprintsFolder) && !Directory.Exists(config.BlueprintsFolder))
                 {
                     MessageBox.Show(
-                        $"config.BlueprintsFolder does not exist: {config.BlueprintsFolder}.{Environment.NewLine}Remove entry in config.json to suppress.",
+                        $"config.BlueprintsFolder does not exist: {config.BlueprintsFolder}.{Environment.NewLine}Remove entry in Config.json to suppress.",
                         "Warning",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -160,8 +160,8 @@ namespace LocalizationTracker
 
             string[] candidates =  {
                 configFile,
-                Path.Combine(Directory.GetCurrentDirectory(), "config.json"),
-                Path.Combine(Path.GetDirectoryName(Environment.GetCommandLineArgs().FirstOrDefault()) ?? string.Empty, "config.json")
+                Path.Combine(Directory.GetCurrentDirectory(), "Config.json"),
+                Path.Combine(Path.GetDirectoryName(Environment.GetCommandLineArgs().FirstOrDefault()) ?? string.Empty, "Config.json")
             };
 
             string? configPath = candidates.FirstOrDefault(File.Exists);

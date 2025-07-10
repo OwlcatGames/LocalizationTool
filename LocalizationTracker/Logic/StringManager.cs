@@ -200,8 +200,8 @@ namespace LocalizationTracker.Logic
                     AbsolutePath = $"{AppConfig.Instance.AbsStringsFolder}/_Virtual/{item.Id}.json".Replace("\\", "/"),
                     Languages = new List<LocaleData>
                             {
-                                new LocaleData { Text = "Dialog comment", TranslatedFrom = Locale.ruRU, Locale = Locale.enGB, VoiceComment = item.VOComment[Locale.enGB], ModificationDate = DateTimeOffset.UtcNow},
-                                new LocaleData { Text = "Dialog comment", Locale = Locale.ruRU, VoiceComment = item.VOComment[Locale.ruRU], ModificationDate = DateTimeOffset.UtcNow }
+                                new LocaleData { Text = "Dialog comment", TranslatedFrom = Locale.ruRU, Locale = Locale.enGB, VoiceComment = item.VOComment[Locale.enGB], ModificationDate = DateTime.UtcNow},
+                                new LocaleData { Text = "Dialog comment", Locale = Locale.ruRU, VoiceComment = item.VOComment[Locale.ruRU], ModificationDate = DateTime.UtcNow }
                             },
                 });
 

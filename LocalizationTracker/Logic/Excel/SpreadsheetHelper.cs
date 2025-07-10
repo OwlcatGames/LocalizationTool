@@ -45,7 +45,7 @@ namespace LocalizationTracker.Excel
 
         static void CopyTemplateTo(string path)
         {
-            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "template.xlsx");
+            var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Template.xlsx");
             File.Copy(templatePath, path);
         }
 

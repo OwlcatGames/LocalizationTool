@@ -66,6 +66,6 @@ public enum InlineCollectionType
     DiffSourceNoTags,
     SpellCheck,
     Filter,
-    Glossary,
-    MaxLength
+    Glossary
+    
 }

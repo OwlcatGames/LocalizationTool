@@ -4,11 +4,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using LocalizationTracker.Logic;
+using StringsCollector.Data.Unity;
 
 namespace LocalizationTracker.Windows
 {
+    public enum GridRowType
+    {
+        Format = 0,
+        Source = 1,
+        Target = 2,
+        AddTraits = 3,
+        RemoveTags = 4,
+        Context = 5,
+        Hierarchy = 7,
+        Comments = 8,
+        ExportSeparateFiles = 9,
+        SortAsSvg = 10,
+        Buttons = 11
+    }
+
+
     public partial class ExportDialog
     {
+        private static readonly Dictionary<ExportTarget, Dictionary<GridRowType, GridLength>> RowVisibilityConfig =
+     new()
+     {
+         [ExportTarget.LocalizationToExcel] = new Dictionary<GridRowType, GridLength>
+         {
+             [GridRowType.Format] = GridLength.Auto,
+             [GridRowType.Source] = GridLength.Auto,
+             [GridRowType.Target] = GridLength.Auto,
+             [GridRowType.AddTraits] = GridLength.Auto,
+             [GridRowType.RemoveTags] = GridLength.Auto,
+             [GridRowType.Context] = GridLength.Auto,
+             [GridRowType.Hierarchy] = GridLength.Auto,
+             [GridRowType.Comments] = GridLength.Auto,
+             [GridRowType.ExportSeparateFiles] = GridLength.Auto,
+             [GridRowType.SortAsSvg] = GridLength.Auto,
+             [GridRowType.Buttons] = GridLength.Auto
+         },
+         [ExportTarget.VoiceComments] = new Dictionary<GridRowType, GridLength>
+         {
+             [GridRowType.Context] = new GridLength(0),
+             [GridRowType.Comments] = new GridLength(0),
+         },
+         [ExportTarget.UpdatedTraitToExcel] = new Dictionary<GridRowType, GridLength>
+         {
+             [GridRowType.Context] = new GridLength(0),
+             [GridRowType.Target] = new GridLength(0),
+             [GridRowType.AddTraits] = new GridLength(0),
+             [GridRowType.ExportSeparateFiles] = new GridLength(0),
+
+         }
+     };
+
         public Locale Source { get; set; } = StringEntry.SourceLocale;
         public Locale Target { get; set; } = StringEntry.TargetLocale;
 
@@ -51,25 +100,29 @@ namespace LocalizationTracker.Windows
             Close();
         }
 
-        private void ComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+
+        private void ApplyGridRowConfig(ExportTarget target)
         {
-            if (ExportTarget == ExportTarget.LocalizationToExcel)
-            {
-                MainGrid.RowDefinitions.ElementAt(9).Height = GridLength.Auto;
+            foreach (var rowDef in MainGrid.RowDefinitions)
+                rowDef.Height = GridLength.Auto;
 
-            }
-            else if (ExportTarget == ExportTarget.VoiceComments)
+            if (RowVisibilityConfig.TryGetValue(target, out var config))
             {
-                MainGrid.RowDefinitions.ElementAt(5).Height = new GridLength(0);
-                MainGrid.RowDefinitions.ElementAt(8).Height = new GridLength(0);
-                MainGrid.RowDefinitions.ElementAt(9).Height = new GridLength(0);
-                MainGrid.RowDefinitions.ElementAt(10).Height = new GridLength(0);
-
+                foreach (var kvp in config)
+                {
+                    MainGrid.RowDefinitions[(int)kvp.Key].Height = kvp.Value;
+                }
             }
             else
             {
-                MainGrid.RowDefinitions.ElementAt(9).Height = new GridLength(0);
+                return;
             }
+        }
+
+
+        private void ComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            ApplyGridRowConfig(ExportTarget);
         }
 
     }

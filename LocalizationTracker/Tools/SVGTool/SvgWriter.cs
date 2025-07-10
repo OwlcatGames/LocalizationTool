@@ -264,7 +264,7 @@ namespace LocalizationTracker.Tools.SVGTool
         {
             try
             {
-                string rootDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Svg");
+                string rootDirectory = Path.Combine(Directory.GetCurrentDirectory(), "SVGs");
                 string relativePath = Path.GetDirectoryName(fileSource);
 
                 if (relativePath == null)

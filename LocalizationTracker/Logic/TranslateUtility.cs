@@ -271,7 +271,7 @@ public static class TranslateUtility
     {
         if (AppConfig.Instance.DeepL.SourceLocaleMap.TryGetValue(locale, out var mappedLocale))
             return mappedLocale;
-        throw new Exception($"Cant find source locale {locale} mapping in config.json");
+        throw new Exception($"Cant find source locale {locale} mapping in Config.json");
     }
 
     private static string MapTargetLocale(Locale locale)
@@ -279,7 +279,7 @@ public static class TranslateUtility
         if (AppConfig.Instance.DeepL.TargetLocaleMap.TryGetValue(locale, out var mappedLocale))
             return mappedLocale;
 
-        throw new Exception($"Cant find target locale {locale} mapping in config.json");
+        throw new Exception($"Cant find target locale {locale} mapping in Config.json");
     }
 
     public static async Task Translate(List<StringEntry> entries, Translator translator, bool addTagToString, StringManager.EngineType engine, IProgress<int> progress)

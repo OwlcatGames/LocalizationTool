@@ -141,7 +141,7 @@ namespace LocalizationTracker.Excel
             stylesPart.Stylesheet.CellFormats.AppendChild(greenSolidFormat);
         }
 
-               //CellStyle.Context = 6
+        //CellStyle.Context = 6
         static void CreateContextStyle(WorkbookStylesPart stylesPart)
         {
             var solidYellow = new PatternFill() { PatternType = PatternValues.Solid };

@@ -29,8 +29,8 @@ namespace LocalizationTracker.Tools
 
 		private static WordList? CreateDictionary(string lang)
 		{
-			var affFile = $"dict/{lang}/index.aff";
-            var dicFile = $"dict/{lang}/index.dic";
+			var affFile = $"Dictionary/{lang}/index.aff";
+            var dicFile = $"Dictionary/{lang}/index.dic";
 
 			if (!File.Exists(affFile) || !File.Exists(dicFile))
 				return null;
@@ -38,7 +38,7 @@ namespace LocalizationTracker.Tools
             using var affixStream = File.OpenRead(affFile);
             using var mainStream = File.OpenRead(dicFile);
 
-            string customDictFile = $"dict/{lang}/custom.txt";
+            string customDictFile = $"Dictionary/{lang}/custom.txt";
             if (File.Exists(customDictFile))
             {
                 var combined = new MemoryStream();

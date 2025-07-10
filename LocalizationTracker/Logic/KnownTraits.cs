@@ -10,4 +10,8 @@ public class KnownTraits
     public static readonly string Edited = "Edited";
     public static readonly string MajorChange = "MajorChange";
     public static readonly string EditorChange = "ChangedInEngine";
+    public static readonly string Reviewed = "Reviewed";
+    public static readonly string LocFinal = "Loc_Final";
+
+
 }

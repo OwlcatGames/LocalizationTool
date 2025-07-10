@@ -124,6 +124,8 @@ namespace LocalizationTracker.Excel
             var path = data.DistFolder;
             var strings = data.Items;
             var exportFileName = Path.GetFileNameWithoutExtension(path);
+
+
             var exportResult = new ExportResults(data.ExportParams.Source, data.ExportParams.Target.First(), exportFileName);
 
             using var wrapper = new WorkbookWrapper(path, WrapperMod.ExportNewFile, ColumnsSettings);
@@ -156,7 +158,7 @@ namespace LocalizationTracker.Excel
 
         protected virtual bool CheckStringIsValidForExport(StringEntry e) => true;
 
-        private void AddHeader(in ExportData data, SheetData sheet)
+        protected virtual void AddHeader(in ExportData data, SheetData sheet)
         {
             var traits = string.Join(", ", data.ExportParams.Traits);
             var row = new Row();
@@ -220,7 +222,6 @@ namespace LocalizationTracker.Excel
                 {
                     row.AppendCell(new Cell().SetText(s.Data.GetLocale(data.ExportParams.Source)?.TranslatedComment ?? ""));
                 }
-
 
                 if (s.DialogsDataList != null && s.DialogsDataList.Count() != 0 && s.DialogsDataList.FirstOrDefault().Nodes
                         .Where(w => w.Text != null

@@ -17,7 +17,7 @@ namespace LocalizationTracker
     {
         static Guid _guid = Guid.NewGuid();
         static HttpListener _listener = new HttpListener();
-
+        private static bool _isStopped = false;
 
         public static async Task StartListeningAsync(int port = 35556)
         {
@@ -155,8 +155,19 @@ namespace LocalizationTracker
         {
             if (_listener != null)
             {
-                _listener.Stop();
-                _listener.Close();
+                try
+                {
+                    _listener.Stop();
+                    _listener.Close();
+                }
+                catch (ObjectDisposedException ex)
+                {
+                    Console.WriteLine($"[StopListening] ObjectDisposedException: {ex.Message}");
+                }
+                finally
+                {
+                    _isStopped = true;
+                }
             }
         }
 

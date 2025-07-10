@@ -275,7 +275,7 @@
                         <DatePicker SelectedDate="{Binding ElementName=Window, Path=Filter.ModificationDateFrom, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" />
                         <DatePicker SelectedDate="{Binding ElementName=Window, Path=Filter.ModificationDateTo, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" />
                         <ComboBox MaxWidth="50" Grid.Row="0" Grid.Column="2" SelectedItem="{Binding ElementName=Window, Path=Filter.ModificationLocale, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{x:Static lib:Locale.ValuesForTraitsFilter}" components:ComboBoxWidthFromItemsBehavior.ComboBoxWidthFromItems="True" HorizontalAlignment="Stretch" Height="24" />
-                        <components:TraitsSelector Height="24" MaxWidth="50" TraitsSource="{Binding ElementName=Window, Path=Filter.ModificationTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="{Binding ElementName=Window, Path=Filter.ModificationTraitsAreLocale, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left"  />
+                        <components:TraitsSelector  Height="24" MaxWidth="50" TraitsSource="{Binding ElementName=Window, Path=Filter.ModificationTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="{Binding ElementName=Window, Path=Filter.ModificationTraitsAreLocale, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Left"  />
                         <Button  x:Name="InputButton" Content="Search"  Grid.Row="0" Grid.Column="4" Width="50" HorizontalAlignment="Left" Background="LightBlue" Click="SearchButton_Click" IsDefault="true"/>
                     </Grid>
                 </Grid>
@@ -406,7 +406,7 @@
                                 <ComboBox Width="Auto" Margin="0" SelectedItem="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocale,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=DataContext.SourceLocaleValues}" />
                                 <StackPanel Name="TraitSelection" Orientation="Horizontal" Visibility="Collapsed">
                                     <TextBlock Width="30" Margin="20,0,0,0" VerticalAlignment="Center">Trait</TextBlock>
-                                    <components:TraitsSelector  TraitsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=Filter.UpdatedFilterTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="true" VerticalAlignment="Center" />
+                                    <components:TraitsSelector x:Name="UpdatedTraitsSelector" TraitsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}, AncestorLevel=1}, Path=Filter.UpdatedFilterTraits, UpdateSourceTrigger=PropertyChanged}"  IsLocale="true" VerticalAlignment="Center" />
                                 </StackPanel>
                             </StackPanel>
                         </DataGridTemplateColumn.Header>

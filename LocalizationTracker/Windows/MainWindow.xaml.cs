@@ -206,10 +206,8 @@ namespace LocalizationTracker.Windows
                     {
                         FilterTimer.Stop();
                         UpdateFilterMode();
-                        var updateInlines = Filter.Mode != m_LastFilterMode
-                                            && (Filter.Mode == FilterMode.Tags_Mismatch ||
-                                                m_LastFilterMode == FilterMode.Tags_Mismatch) ||
-                                                Filter.Mode == FilterMode.Glossary_Mismatch;
+                        var updateInlines = Filter.Mode != m_LastFilterMode;
+
                         UpdateFilter(updateInlines);
                         m_LastFilterMode = Filter.Mode;
                     };
@@ -1547,13 +1545,19 @@ namespace LocalizationTracker.Windows
             try
             {
                 var selectedDir = GetBaseSelectedDir();
-                if (selectedDir == null)
+                if (selectedDir == null) return;
+
+                var traitSelector = this.FindName("UpdatedTraitsSelector") as TraitsSelector;
+
+                var test = UpdatedTraitsSelector.SelectedTraits;
+
+                if (traitSelector != null)
                 {
-                    return;
+                    var selectedTraits = traitSelector.SelectedTraits.ToList();
+                    var selectedTraitsText = string.Join(", ", selectedTraits);
+
+                    LocalizationExporter.Export(Path.GetFileName(selectedDir), items, this, selectedTraitsText);
                 }
-
-
-                LocalizationExporter.Export(Path.GetFileName(selectedDir), items, this);
             }
             catch (Exception ex)
             {
@@ -1775,6 +1779,7 @@ namespace LocalizationTracker.Windows
         }
 
         private void SearchButton_Click(object sender, RoutedEventArgs e)
+        
         {
             UpdateFilter(true);
         }

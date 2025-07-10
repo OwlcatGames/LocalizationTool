@@ -19,6 +19,7 @@ namespace LocalizationTracker.Data
         public static event Action? TargetLocaleChanged;
 
         public static string SelectedDirPrefix;
+        private string? m_DirectoryRelativeToStringsFolder;
         private static Locale? s_SourceLocale;
         
         private static string s_SourceTrait = LocaleTrait.Loc_Final.ToString();
@@ -51,12 +52,15 @@ namespace LocalizationTracker.Data
             }
         }
 
-        [NotNull]
-        public string Key => Data.Key;
 
+        [NotNull]
+        public IStringData Data;
         // may use backward or forward slashes, no guarantees
         [NotNull]
         private readonly string m_Name;
+
+        [NotNull]
+        public string Key => Data.Key;
 
         public string AbsolutePath { get; }
         public string StringPath { get; set; }
@@ -118,29 +122,27 @@ namespace LocalizationTracker.Data
 
         public string? Speaker => Data.Speaker;
 
-        [NotNull]
-        public IStringData Data;
-
-        private string? m_DirectoryRelativeToStringsFolder;
 
         public string TranslationStatus
         {
             get
             {
-                // 0. unused strings
+
                 var isUnused = Data is UnrealStringData { Unused: true };
                 if (isUnused)
                     return "NOT USED";
 
-                // 1. Check if source locale has draft or ToTranslate traits
                 bool isDraft = Data.GetTraitData(SourceLocale, KnownTraits.Draft) != null;
                 if (isDraft)
-                    return "DRAFT"; // don't care any further, probably
+                    return "DRAFT"; 
                 bool isFinal = Data.GetTraitData(SourceLocale, KnownTraits.ToTranslate) != null;
 
-                // 2. Check target locale pipeline state
-                string translationState = Data.GetTraitData(TargetLocale, KnownTraits.Edited) != null
-                    ? "Edited"
+                string translationState = Data.GetTraitData(TargetLocale, KnownTraits.LocFinal) != null
+                    ? "Loc_Final"
+                    : Data.GetTraitData(TargetLocale, KnownTraits.Reviewed) != null
+                    ? "Reviewed"
+                    : Data.GetTraitData(TargetLocale, KnownTraits.Edited) != null
+                    ? "Edited" 
                     : Data.GetTraitData(TargetLocale, KnownTraits.SentToEd) != null
                         ? "SentToEd"
                         : Data.GetTraitData(TargetLocale, KnownTraits.Translated) != null
@@ -148,15 +150,33 @@ namespace LocalizationTracker.Data
                             : Data.GetTraitData(TargetLocale, KnownTraits.SentToTr) != null
                                 ? "SentToTr"
                                 : "";
+
+
+                var editedTrait = Data.GetTraitData(TargetLocale, KnownTraits.Edited);
+                var translatedTrait = Data.GetTraitData(TargetLocale, KnownTraits.Translated);
+
+                if (editedTrait != null && translatedTrait != null &&
+                    (translationState == "Edited" || translationState == "Translated"))
+                {
+                    if (editedTrait.ModificationDate >= translatedTrait.ModificationDate)
+                    {
+                        translationState = "Edited";
+                    }
+                    else
+                    {
+                        translationState = "Translated";
+                    }
+                }
+
+
+
                 isFinal = isFinal && translationState == "";
 
-                // 3. Check if there's a MajorChange mark
+
                 bool major = Data.GetStringTraitData(KnownTraits.MajorChange) != null;
 
-                // 4. Check if target has been changed directly
                 bool hasEngineChange = Data.GetTraitData(TargetLocale, KnownTraits.EditorChange) != null;
 
-                // 5. Check if source or target are out of date
                 string GetCurrentTranslationSource(Locale locale)
                 {
                     var locData = Data.GetLocale(locale);
@@ -177,7 +197,6 @@ namespace LocalizationTracker.Data
                 var targetData = Data.GetLocale(TargetLocale);
                 bool targetOutOfDate = targetData != null && targetData.OriginalText != GetCurrentTranslationSource(TargetLocale);
 
-                // build final status string
 
                 return $"{(major ? "!!! " : "")}{(isFinal ? "Ready " : "")}{translationState}|{(hasEngineChange ? "TARGET CHANGED" : "")}{(sourceOutOfDate ? "SOURCE WRONG! " : "")}{(targetOutOfDate ? "Out of date!" : "")}";
             }
@@ -195,10 +214,10 @@ namespace LocalizationTracker.Data
         public StringEntry(IStringData data)
         {
             Data = data;
-            
+
             AbsolutePath = data.SourcePath;
             StringPath = data.StringPath;
-                
+
             m_Name = Path.GetFileName(AbsolutePath);
 
             if (StringManager.AllDialogs.Count() != 0)

@@ -65,7 +65,7 @@ namespace LocalizationTracker.ViewModel
 			{
 				TranslationVisibility = Visibility.Visible;
 				TranslatedFrom = localeData.TranslatedFrom;
-				TranslationDate = localeData.TranslationDate ?? DateTimeOffset.MinValue;
+				TranslationDate = localeData.TranslationDate ?? DateTime.MinValue;
 				OriginalText = new InlinesWrapper(localeData.OriginalText);
 			}
 			else

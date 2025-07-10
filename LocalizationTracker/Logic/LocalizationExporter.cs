@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using DocumentFormat.OpenXml.Spreadsheet;
 using JetBrains.Annotations;
 using LocalizationTracker.Data;
@@ -9,9 +10,11 @@ using LocalizationTracker.Logic.Excel.Wrappers;
 using LocalizationTracker.OpenOffice;
 using LocalizationTracker.Utility;
 using LocalizationTracker.Windows;
+using StringsCollector.Data.Unity;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Forms;
@@ -28,14 +31,15 @@ namespace LocalizationTracker
             [ExportTarget.TagsMismatchToExcel] = new ExcelTagsMismathExporter(new ExcelTagMismatchStyle()),
             [ExportTarget.LocalizationToOpenOffice] = new OpenOfficeExporter(),
             [ExportTarget.SpeakersStrings] = new SpeakersExport(),
-            [ExportTarget.VoiceComments] = new VoiceCommentsExport()
+            [ExportTarget.VoiceComments] = new VoiceCommentsExport(),
+            [ExportTarget.UpdatedTraitToExcel] = new ExcelUpdatedTraitExporter(new ExcelStyles())
         };
 
 
         #region Methods
 
         [CanBeNull]
-        public static void Export(string selectedDirName, StringEntry[] items, Window owner)
+        public static void Export(string selectedDirName, StringEntry[] items, Window owner, string traits)
         {
             ExportResultsWindow? win = null;
             string savedPath = string.Empty;
@@ -46,7 +50,7 @@ namespace LocalizationTracker
                 {
                     foreach (var target in param.Target)
                     {
-                        var res = ExportSingleFile(param, owner, items, selectedDirName, target, savedPath);
+                        var res = ExportSingleFile(param, owner, items, selectedDirName, string.Empty, target, savedPath);
                         win = res.win;
                         savedPath = res.savedPath;
                     }
@@ -54,7 +58,12 @@ namespace LocalizationTracker
                 }
                 else
                 {
-                    win = ExportSingleFile(param, owner, items, selectedDirName).win;
+                    if (param.ExportTarget == ExportTarget.UpdatedTraitToExcel)
+                    {
+                        selectedDirName = $"{selectedDirName}_{string.Join(", ", traits)}";
+                    }
+
+                    win = ExportSingleFile(param, owner, items, selectedDirName, traits).win;
                 }
             }
 
@@ -62,7 +71,7 @@ namespace LocalizationTracker
                 win.ShowDialog();
         }
 
-        private static (ExportResultsWindow? win, string savedPath) ExportSingleFile(ExportParams param, Window owner, StringEntry[] items, string selectedDirName, Locale? target = null, string? savedPath = null)
+        private static (ExportResultsWindow? win, string savedPath) ExportSingleFile(ExportParams param, Window owner, StringEntry[] items, string selectedDirName, string traits, Locale? target = null, string? savedPath = null)
         {
             ExportResultsWindow? win = null;
             ExportWrapper? wrapper = default;
@@ -70,7 +79,7 @@ namespace LocalizationTracker
 
             if (_exporters.TryGetValue(param.ExportTarget, out var exporter))
             {
-                ExportData data = new ExportData() { ExportParams = param, Items = items };
+                ExportData data = new ExportData() { ExportParams = param, Items = items, Traits = traits };
                 data = exporter.PrepareDataToExport(data);
 
                 if (target != null)
@@ -194,6 +203,7 @@ namespace LocalizationTracker
         public string DistFolder;
         public StringEntry[] Items;
         public ExportParams ExportParams;
+        public string Traits = string.Empty;
     }
 
     public interface IExporter
@@ -209,6 +219,7 @@ namespace LocalizationTracker
         LocalizationToOpenOffice,
         StringDiffToExcel,
         TagsMismatchToExcel,
+        UpdatedTraitToExcel,
         SpeakersStrings,
         VoiceComments
     }
