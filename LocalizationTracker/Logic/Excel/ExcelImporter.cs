@@ -108,10 +108,10 @@ namespace LocalizationTracker.Excel
             var m = Regex.Match(GetCellValue(sourceCell), @"source \[(\w*-?\w*)\]");
             m_SourceLocale = m.Groups[1].Value;
 
-            m = Regex.Match(GetCellValue(currentCell), @"current \[(\w*)\]");
+            m = Regex.Match(GetCellValue(currentCell), @"current \[(\w*-?\w*)\]");
             m_TargetLocale = m.Groups[1].Value;
 
-            m = Regex.Match(GetCellValue(resultCell), @"result \[(\w*)[,:]([\w\s,]*)\]");
+            m = Regex.Match(GetCellValue(resultCell), @"result \[(\w*-?\w*)[,:]([\w\s,]*)\]");
             var resultLocale = m.Groups[1].Value;
             if (resultLocale != m_TargetLocale)
             {
